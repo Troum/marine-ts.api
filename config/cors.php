@@ -1,8 +1,15 @@
 <?php
 
+// Список Origin браузера (scheme + host + port). Без слэша в конце. Продакшен — через CORS_ALLOWED_ORIGINS в .env
+$defaultOrigins = implode(',', [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://marine-ts.mytests.space',
+]);
+
 $origins = array_values(array_filter(array_map(
     'trim',
-    explode(',', (string) env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000')),
+    explode(',', (string) env('CORS_ALLOWED_ORIGINS', $defaultOrigins)),
 )));
 
 if ($origins === []) {
