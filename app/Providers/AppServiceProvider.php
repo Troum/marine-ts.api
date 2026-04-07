@@ -2,14 +2,15 @@
 
 namespace App\Providers;
 
+use App\Contracts\Repositories\ApplicationFormRepositoryInterface;
+use App\Contracts\Repositories\ContentPageRepositoryInterface;
 use App\Contracts\Repositories\NewsRepositoryInterface;
 use App\Contracts\Repositories\ProjectRepositoryInterface;
 use App\Contracts\Repositories\ServiceRepositoryInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
-use App\Contracts\Repositories\ApplicationFormRepositoryInterface;
-use App\Contracts\Repositories\ContentPageRepositoryInterface;
 use App\Contracts\Repositories\VacancyRepositoryInterface;
 use App\Contracts\Services\AdminUserServiceInterface;
+use App\Contracts\Services\AnalyticsServiceInterface;
 use App\Contracts\Services\ApplicationFormServiceInterface;
 use App\Contracts\Services\ApplicationFormSupplementaryDocumentServiceInterface;
 use App\Contracts\Services\AuthServiceInterface;
@@ -22,14 +23,15 @@ use App\Contracts\Services\SiteSeoServiceInterface;
 use App\Contracts\Services\StatsServiceInterface;
 use App\Contracts\Services\VacancyServiceInterface;
 use App\Models\User;
+use App\Repositories\ApplicationFormRepository;
+use App\Repositories\ContentPageRepository;
 use App\Repositories\NewsRepository;
 use App\Repositories\ProjectRepository;
 use App\Repositories\ServiceRepository;
 use App\Repositories\UserRepository;
-use App\Repositories\ApplicationFormRepository;
-use App\Repositories\ContentPageRepository;
 use App\Repositories\VacancyRepository;
 use App\Services\AdminUserService;
+use App\Services\AnalyticsService;
 use App\Services\ApplicationFormService;
 use App\Services\ApplicationFormSupplementaryDocumentService;
 use App\Services\AuthService;
@@ -68,6 +70,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SiteSeoServiceInterface::class, SiteSeoService::class);
         $this->app->bind(AdminUserServiceInterface::class, AdminUserService::class);
         $this->app->bind(ContentPageServiceInterface::class, ContentPageService::class);
+        $this->app->bind(AnalyticsServiceInterface::class, AnalyticsService::class);
     }
 
     public function boot(): void

@@ -1,9 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\AdminUserController;
+use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\ApplicationFormController;
 use App\Http\Controllers\Api\ApplicationFormDocumentUploadController;
 use App\Http\Controllers\Api\ApplicationFormSupplementaryDownloadController;
-use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContentPageController;
 use App\Http\Controllers\Api\FeedbackController;
@@ -16,6 +17,9 @@ use App\Http\Controllers\Api\VacancyController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/auth/login', [AuthController::class, 'login']);
+
+Route::post('/analytics/page-view', [AnalyticsController::class, 'storePageView'])
+    ->middleware('throttle:120,1');
 
 Route::get('/news', [NewsController::class, 'index']);
 Route::get('/news/{slug}', [NewsController::class, 'showBySlug'])->where('slug', '[a-z0-9\-]+');
@@ -89,6 +93,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/services/{service}', [ServiceController::class, 'destroy']);
 
     Route::put('/seo/pages/{slug}', [SiteSeoController::class, 'update'])->where('slug', '[a-z0-9-]+');
+
+    Route::get('/analytics/manage/summary', [AnalyticsController::class, 'manageSummary']);
 
     Route::get('/feedback/manage', [FeedbackController::class, 'manageIndex']);
     Route::get('/feedback/manage/{feedback}', [FeedbackController::class, 'show'])->whereNumber('feedback');
