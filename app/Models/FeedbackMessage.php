@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
     'message',
     'ip',
     'read_at',
+    'replied_at',
 ])]
 class FeedbackMessage extends Model
 {
@@ -22,6 +23,7 @@ class FeedbackMessage extends Model
     {
         return [
             'read_at' => 'datetime',
+            'replied_at' => 'datetime',
         ];
     }
 }

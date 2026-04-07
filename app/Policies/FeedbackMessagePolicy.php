@@ -21,4 +21,9 @@ class FeedbackMessagePolicy
     {
         return $user->can('manage feedback');
     }
+
+    public function reply(User $user, FeedbackMessage $feedbackMessage): bool
+    {
+        return $user->can('manage feedback');
+    }
 }

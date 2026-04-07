@@ -98,6 +98,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/feedback/manage', [FeedbackController::class, 'manageIndex']);
     Route::get('/feedback/manage/{feedback}', [FeedbackController::class, 'show'])->whereNumber('feedback');
+    Route::post('/feedback/manage/{feedback}/reply', [FeedbackController::class, 'reply'])
+        ->whereNumber('feedback')
+        ->middleware('throttle:20,1');
     Route::delete('/feedback/{feedback}', [FeedbackController::class, 'destroy'])->whereNumber('feedback');
 
     Route::get('/content-pages/manage', [ContentPageController::class, 'manageIndex']);

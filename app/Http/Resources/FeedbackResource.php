@@ -25,6 +25,7 @@ class FeedbackResource extends JsonResource
             'message' => $this->message,
             'ip' => $this->ip,
             'readAt' => self::toIso8601($this->read_at),
+            'repliedAt' => self::toIso8601($this->replied_at),
             'createdAt' => self::toIso8601($this->created_at),
             'updatedAt' => self::toIso8601($this->updated_at),
         ];
