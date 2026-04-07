@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use App\Models\FeedbackMessage;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 
 /**
  * @mixin FeedbackMessage
@@ -23,9 +24,18 @@ class FeedbackResource extends JsonResource
             'phone' => $this->phone,
             'message' => $this->message,
             'ip' => $this->ip,
-            'readAt' => $this->read_at?->toIso8601String(),
-            'createdAt' => $this->created_at?->toIso8601String(),
-            'updatedAt' => $this->updated_at?->toIso8601String(),
+            'readAt' => self::toIso8601($this->read_at),
+            'createdAt' => self::toIso8601($this->created_at),
+            'updatedAt' => self::toIso8601($this->updated_at),
         ];
+    }
+
+    private static function toIso8601(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return Carbon::parse($value)->toIso8601String();
     }
 }
