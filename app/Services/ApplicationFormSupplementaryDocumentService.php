@@ -39,7 +39,7 @@ final class ApplicationFormSupplementaryDocumentService implements ApplicationFo
         }
 
         $payload = $form->payload ?? [];
-        $sup = is_array($payload['supplementaryFiles'] ?? null) ? $payload['supplementaryFiles'] : [];
+        $sup = $this->supplementaryMapFromPayload($payload);
         $uploaded = [];
         foreach ($keys as $key) {
             if (isset($sup[$key])) {
@@ -84,7 +84,7 @@ final class ApplicationFormSupplementaryDocumentService implements ApplicationFo
         }
 
         $payload = $form->payload ?? [];
-        $sup = is_array($payload['supplementaryFiles'] ?? null) ? $payload['supplementaryFiles'] : [];
+        $sup = $this->supplementaryMapFromPayload($payload);
 
         $uploadedKeys = [];
         foreach ($keys as $key) {
@@ -144,7 +144,7 @@ final class ApplicationFormSupplementaryDocumentService implements ApplicationFo
     public function getSupplementaryDownloadDescriptor(ApplicationForm $form, string $key): ?array
     {
         $payload = $form->payload ?? [];
-        $sup = is_array($payload['supplementaryFiles'] ?? null) ? $payload['supplementaryFiles'] : [];
+        $sup = $this->supplementaryMapFromPayload($payload);
         if (! isset($sup[$key]) || ! is_array($sup[$key])) {
             return null;
         }
@@ -194,7 +194,7 @@ final class ApplicationFormSupplementaryDocumentService implements ApplicationFo
     private function collectUploadedSummaries(ApplicationForm $form, array $keys): array
     {
         $payload = $form->payload ?? [];
-        $sup = is_array($payload['supplementaryFiles'] ?? null) ? $payload['supplementaryFiles'] : [];
+        $sup = $this->supplementaryMapFromPayload($payload);
         $out = [];
         foreach ($keys as $key) {
             if (isset($sup[$key])) {
@@ -203,5 +203,18 @@ final class ApplicationFormSupplementaryDocumentService implements ApplicationFo
         }
 
         return $out;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function supplementaryMapFromPayload(array $payload): array
+    {
+        if (is_array($payload['supplementaryFiles'] ?? null)) {
+            return $payload['supplementaryFiles'];
+        }
+
+        return is_array($payload['supplementary_files'] ?? null) ? $payload['supplementary_files'] : [];
     }
 }

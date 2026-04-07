@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\ApplicationForm;
+use Illuminate\Support\Str;
 
 /**
  * Данные для PDF-шаблона анкеты (структура как на сайте / HTML-шаблон).
@@ -20,54 +21,85 @@ final class ApplicationFormPdfTemplateData
         $form->loadMissing('vacancy');
         $p = is_array($form->payload) ? $form->payload : [];
 
-        $travelLabelRows = self::listOrEmpty($p['travelRows'] ?? null);
-        $competencyLabelRows = self::listOrEmpty($p['competencyRows'] ?? null);
-        $otherCertLabelRows = self::listOrEmpty($p['otherCertificateRows'] ?? null);
+        $travelLabelRows = self::listFrom($p, 'travelRows');
+        $competencyLabelRows = self::listFrom($p, 'competencyRows');
+        $otherCertLabelRows = self::listFrom($p, 'otherCertificateRows');
 
         return [
             'form' => $form,
-            'positionApplyingFor' => self::scalar($p['positionApplyingFor'] ?? ''),
-            'surnameAndName' => self::scalar($p['surnameAndName'] ?? ''),
-            'dateOfBirth' => self::scalar($p['dateOfBirth'] ?? ''),
-            'photoFileName' => self::scalar($p['photoFileName'] ?? ''),
-            'lastName' => self::scalar($p['lastName'] ?? ''),
-            'firstName' => self::scalar($p['firstName'] ?? ''),
-            'fathersName' => self::scalar($p['fathersName'] ?? ''),
-            'maritalStatus' => self::scalar($p['maritalStatus'] ?? ''),
-            'placeOfBirth' => self::scalar($p['placeOfBirth'] ?? ''),
-            'availableFrom' => self::scalar($p['availableFrom'] ?? ''),
-            'citizenship' => self::scalar($p['citizenship'] ?? ''),
-            'englishLevel' => self::scalar($p['englishLevel'] ?? ''),
-            'mobilePhone' => self::scalar($p['mobilePhone'] ?? ''),
-            'homePhone' => self::scalar($p['homePhone'] ?? ''),
-            'email' => self::scalar($p['email'] ?? ''),
-            'messenger' => self::scalar($p['messenger'] ?? ''),
-            'homeAddress' => self::scalar($p['homeAddress'] ?? ''),
-            'nearestAirport' => self::scalar($p['nearestAirport'] ?? ''),
-            'nokLastName' => self::scalar($p['nokLastName'] ?? ''),
-            'nokFirstName' => self::scalar($p['nokFirstName'] ?? ''),
-            'nokContactNumber' => self::scalar($p['nokContactNumber'] ?? ''),
-            'nokEmail' => self::scalar($p['nokEmail'] ?? ''),
-            'nokRelationship' => self::scalar($p['nokRelationship'] ?? ''),
-            'nokAddress' => self::scalar($p['nokAddress'] ?? ''),
+            'positionApplyingFor' => self::strFrom($p, 'positionApplyingFor'),
+            'surnameAndName' => self::strFrom($p, 'surnameAndName'),
+            'dateOfBirth' => self::strFrom($p, 'dateOfBirth'),
+            'photoFileName' => self::strFrom($p, 'photoFileName'),
+            'lastName' => self::strFrom($p, 'lastName'),
+            'firstName' => self::strFrom($p, 'firstName'),
+            'fathersName' => self::strFrom($p, 'fathersName'),
+            'maritalStatus' => self::strFrom($p, 'maritalStatus'),
+            'placeOfBirth' => self::strFrom($p, 'placeOfBirth'),
+            'availableFrom' => self::strFrom($p, 'availableFrom'),
+            'citizenship' => self::strFrom($p, 'citizenship'),
+            'englishLevel' => self::strFrom($p, 'englishLevel'),
+            'mobilePhone' => self::strFrom($p, 'mobilePhone'),
+            'homePhone' => self::strFrom($p, 'homePhone'),
+            'email' => self::strFrom($p, 'email'),
+            'messenger' => self::strFrom($p, 'messenger'),
+            'homeAddress' => self::strFrom($p, 'homeAddress'),
+            'nearestAirport' => self::strFrom($p, 'nearestAirport'),
+            'nokLastName' => self::strFrom($p, 'nokLastName'),
+            'nokFirstName' => self::strFrom($p, 'nokFirstName'),
+            'nokContactNumber' => self::strFrom($p, 'nokContactNumber'),
+            'nokEmail' => self::strFrom($p, 'nokEmail'),
+            'nokRelationship' => self::strFrom($p, 'nokRelationship'),
+            'nokAddress' => self::strFrom($p, 'nokAddress'),
             'travelFixed' => self::mapFixedTravel($travelLabelRows),
-            'travelOther' => self::mapTravelOther($p['travelOtherRows'] ?? null),
+            'travelOther' => self::mapTravelOther(self::pick($p, 'travelOtherRows')),
             'competencyFixed' => self::mapFixedCompetency($competencyLabelRows),
-            'competencyOther' => self::mapCompetencyOther($p['competencyOtherRows'] ?? null),
+            'competencyOther' => self::mapCompetencyOther(self::pick($p, 'competencyOtherRows')),
             'otherCertFixed' => self::mapFixedOtherCerts($otherCertLabelRows),
-            'otherCertOther' => self::mapOtherCertExtra($p['otherCertificateExtraRows'] ?? null),
-            'seaService' => self::mapSeaService($p['seaServiceRows'] ?? null),
-            'education' => self::mapEducation($p['educationRows'] ?? null),
-            'safetyOverallSize' => self::scalar($p['safetyOverallSize'] ?? ''),
-            'safetyHeight' => self::scalar($p['safetyHeight'] ?? ''),
-            'safetyShoeSize' => self::scalar($p['safetyShoeSize'] ?? ''),
-            'safetyWeight' => self::scalar($p['safetyWeight'] ?? ''),
-            'consentRuAccuracy' => self::boolVal($p['consentRuAccuracy'] ?? false),
-            'consentRuPd' => self::boolVal($p['consentRuPd'] ?? false),
-            'consentEnAccuracy' => self::boolVal($p['consentEnAccuracy'] ?? false),
-            'consentEnPd' => self::boolVal($p['consentEnPd'] ?? false),
+            'otherCertOther' => self::mapOtherCertExtra(self::pick($p, 'otherCertificateExtraRows')),
+            'seaService' => self::mapSeaService(self::pick($p, 'seaServiceRows')),
+            'education' => self::mapEducation(self::pick($p, 'educationRows')),
+            'safetyOverallSize' => self::strFrom($p, 'safetyOverallSize'),
+            'safetyHeight' => self::strFrom($p, 'safetyHeight'),
+            'safetyShoeSize' => self::strFrom($p, 'safetyShoeSize'),
+            'safetyWeight' => self::strFrom($p, 'safetyWeight'),
+            'consentRuAccuracy' => self::boolVal(self::pick($p, 'consentRuAccuracy')),
+            'consentRuPd' => self::boolVal(self::pick($p, 'consentRuPd')),
+            'consentEnAccuracy' => self::boolVal(self::pick($p, 'consentEnAccuracy')),
+            'consentEnPd' => self::boolVal(self::pick($p, 'consentEnPd')),
             'mtsLogoDataUri' => self::mtsLogoDataUri(),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private static function pick(array $data, string $camelKey): mixed
+    {
+        if (array_key_exists($camelKey, $data)) {
+            return $data[$camelKey];
+        }
+
+        return $data[Str::snake($camelKey)] ?? null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private static function strFrom(array $data, string $camelKey): string
+    {
+        return self::scalar(self::pick($data, $camelKey));
+    }
+
+    /**
+     * @param  array<string, mixed>  $p
+     * @return list<array<string, mixed>>
+     */
+    private static function listFrom(array $p, string $camelKey): array
+    {
+        $v = self::pick($p, $camelKey);
+
+        return is_array($v) ? $v : [];
     }
 
     /**
@@ -185,15 +217,15 @@ final class ApplicationFormPdfTemplateData
                 continue;
             }
             $out[] = [
-                'rank' => self::scalar($r['rank'] ?? ''),
-                'company' => self::scalar($r['company'] ?? ''),
-                'flag' => self::scalar($r['flag'] ?? ''),
-                'vesselName' => self::scalar($r['vesselName'] ?? ''),
-                'grtDwt' => self::scalar($r['grtDwt'] ?? ''),
-                'vesselType' => self::scalar($r['vesselType'] ?? ''),
-                'engineKw' => self::scalar($r['engineKw'] ?? ''),
-                'signOn' => self::scalar($r['signOn'] ?? ''),
-                'signOff' => self::scalar($r['signOff'] ?? ''),
+                'rank' => self::strFrom($r, 'rank'),
+                'company' => self::strFrom($r, 'company'),
+                'flag' => self::strFrom($r, 'flag'),
+                'vesselName' => self::strFrom($r, 'vesselName'),
+                'grtDwt' => self::strFrom($r, 'grtDwt'),
+                'vesselType' => self::strFrom($r, 'vesselType'),
+                'engineKw' => self::strFrom($r, 'engineKw'),
+                'signOn' => self::strFrom($r, 'signOn'),
+                'signOff' => self::strFrom($r, 'signOff'),
             ];
         }
 
@@ -212,10 +244,10 @@ final class ApplicationFormPdfTemplateData
                 continue;
             }
             $out[] = [
-                'schoolName' => self::scalar($r['schoolName'] ?? ''),
-                'from' => self::scalar($r['from'] ?? ''),
-                'till' => self::scalar($r['till'] ?? ''),
-                'degreeType' => self::scalar($r['degreeType'] ?? ''),
+                'schoolName' => self::strFrom($r, 'schoolName'),
+                'from' => self::strFrom($r, 'from'),
+                'till' => self::strFrom($r, 'till'),
+                'degreeType' => self::strFrom($r, 'degreeType'),
             ];
         }
 
@@ -245,10 +277,10 @@ final class ApplicationFormPdfTemplateData
         }
 
         return [
-            'number' => self::scalar($row['number'] ?? ''),
-            'placeOfIssue' => self::scalar($row['placeOfIssue'] ?? ''),
-            'dateOfIssue' => self::scalar($row['dateOfIssue'] ?? ''),
-            'dateOfExpire' => self::scalar($row['dateOfExpire'] ?? ''),
+            'number' => self::strFrom($row, 'number'),
+            'placeOfIssue' => self::strFrom($row, 'placeOfIssue'),
+            'dateOfIssue' => self::strFrom($row, 'dateOfIssue'),
+            'dateOfExpire' => self::strFrom($row, 'dateOfExpire'),
         ];
     }
 
@@ -258,10 +290,7 @@ final class ApplicationFormPdfTemplateData
     private static function cellsFromPlainCertExtra(mixed $row): array
     {
         $c = self::cellsFromPlainCert($row);
-        $custom = '';
-        if (is_array($row)) {
-            $custom = self::scalar($row['customLabel'] ?? '');
-        }
+        $custom = is_array($row) ? self::strFrom($row, 'customLabel') : '';
 
         return array_merge(['customLabel' => $custom], $c);
     }
@@ -297,13 +326,5 @@ final class ApplicationFormPdfTemplateData
     private static function boolVal(mixed $v): bool
     {
         return $v === true || $v === 1 || $v === '1';
-    }
-
-    /**
-     * @return list<array<string, mixed>>
-     */
-    private static function listOrEmpty(mixed $v): array
-    {
-        return is_array($v) ? $v : [];
     }
 }

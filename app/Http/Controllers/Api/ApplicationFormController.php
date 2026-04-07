@@ -8,19 +8,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ApplicationForm\RequestDocumentsRequest;
 use App\Http\Requests\ApplicationForm\StoreApplicationFormRequest;
 use App\Http\Requests\ApplicationForm\UpdateApplicationFormStatusRequest;
-use App\Support\RequestedDocumentCatalog;
 use App\Http\Resources\ApplicationFormCollection;
 use App\Http\Resources\ApplicationFormResource;
 use App\Models\ApplicationForm;
 use App\Models\Vacancy;
 use App\Support\AdminListQuery;
 use App\Support\ApplicationFormPdfTemplateData;
-use Illuminate\Contracts\Support\Responsable;
+use App\Support\RequestedDocumentCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Mycro\Core\Exceptions\DtoHydrationException;
 use Mycro\Core\Exceptions\ReadonlyPropertyUpdateException;
+use Spatie\LaravelPdf\Enums\Format;
 use Spatie\LaravelPdf\Facades\Pdf;
 use Spatie\LaravelPdf\PdfBuilder;
 
@@ -108,6 +108,7 @@ class ApplicationFormController extends Controller
         $filename = 'anketa-'.$application_form->id.'-'.$slug.'.pdf';
 
         return Pdf::view('pdf.application-form', ApplicationFormPdfTemplateData::make($application_form))
+            ->format(Format::A4)
             ->name($filename)
             ->download();
     }

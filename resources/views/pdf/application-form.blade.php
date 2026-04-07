@@ -55,7 +55,6 @@
         .mb-6 { margin-bottom: 24px; }
         .text-right { text-align: right; }
         .logo-text { font-size: 12px; font-weight: bold; color: #dc2626; line-height: 1.1; }
-        .yellow-note { background-color: #fef9c3; display: inline-block; padding: 4px 8px; margin-bottom: 16px; }
     </style>
 </head>
 <body>
@@ -131,6 +130,7 @@
             <td class="photo-box" style="width:25%;">
                 @if($photoFileName !== '')
                     <div>{{ $photoFileName }}</div>
+                    <div style="font-size:8px; color:#444; margin-top:6px; line-height:1.2;">Имя файла с формы; изображение на сервер не передаётся.<br />File name only; photo file is not uploaded to the server.</div>
                 @else
                     <span>Photo</span>
                 @endif
@@ -512,7 +512,6 @@
                 <p style="margin:0;">Please send this application to</p>
             </td>
             <td class="footer-note" style="font-weight:bold; vertical-align:top;">
-                <p style="margin:0;">crewing@marin-ts.com</p>
                 <p style="margin:0;">crewing@marin-ts.com</p>
             </td>
         </tr>

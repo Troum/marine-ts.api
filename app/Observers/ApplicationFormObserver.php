@@ -7,6 +7,7 @@ use App\Models\ApplicationForm;
 use App\Support\ApplicationFormPdfTemplateData;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Spatie\LaravelPdf\Enums\Format;
 use Spatie\LaravelPdf\Facades\Pdf;
 use Throwable;
 
@@ -16,6 +17,7 @@ final class ApplicationFormObserver
     {
         try {
             $pdfContent = Pdf::view('pdf.application-form', ApplicationFormPdfTemplateData::make($applicationForm))
+                ->format(Format::A4)
                 ->generatePdfContent();
 
             $to = config('mail.crewing_notification.address');

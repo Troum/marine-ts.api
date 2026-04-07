@@ -14,6 +14,7 @@ use App\Support\RequestedDocumentCatalog;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 final class ApplicationFormService implements ApplicationFormServiceInterface
 {
@@ -25,7 +26,8 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
     public function storeForPublishedVacancy(StoreApplicationFormDto $dto): ApplicationForm
     {
         $vacancy = $this->vacancyService->getBySlug($dto->slug);
-        $payload = $dto->payload;
+        /** Mycro DTO рекурсивно переводит ключи в snake_case — приводим обратно к camelCase, как в JSON с фронта. */
+        $payload = $this->camelCasePayloadKeys($dto->payload);
         $fullName = $this->buildFullName($payload);
 
         /** @var ApplicationForm */
@@ -33,7 +35,7 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
             'vacancy_id' => $vacancy->id,
             'status' => ApplicationFormStatus::Pending,
             'full_name' => $fullName,
-            'email' => $payload['email'],
+            'email' => (string) ($payload['email'] ?? ''),
             'phone' => $payload['mobilePhone'] ?? null,
             'payload' => $payload,
         ]);
@@ -71,7 +73,7 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
         $allowed = array_flip(RequestedDocumentCatalog::validKeys());
         foreach ($documentKeys as $key) {
             if (! isset($allowed[$key])) {
-                throw new \InvalidArgumentException('Invalid document key: '.$key);
+                throw new InvalidArgumentException('Invalid document key: '.$key);
             }
         }
 
@@ -89,7 +91,7 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
             'requested_document_keys' => $documentKeys,
         ]);
 
-        /** @var ApplicationForm */
+        /** @var $fresh ApplicationForm */
         $fresh = $this->applicationFormRepository->getOne($applicationForm->id);
 
         $frontend = rtrim((string) config('app.frontend_url'), '/');
@@ -98,6 +100,25 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
         Mail::to($fresh->email)->send(new DocumentsRequestedMail($fresh, $uploadUrl, $documentKeys));
 
         return $fresh;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function camelCasePayloadKeys(array $data): array
+    {
+        $out = [];
+        foreach ($data as $key => $value) {
+            $newKey = is_string($key) ? Str::camel($key) : $key;
+            if (is_array($value)) {
+                $out[$newKey] = $this->camelCasePayloadKeys($value);
+            } else {
+                $out[$newKey] = $value;
+            }
+        }
+
+        return $out;
     }
 
     /**
