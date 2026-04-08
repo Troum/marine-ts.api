@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Contracts\Repositories\ApplicationFormRepositoryInterface;
 use App\Contracts\Repositories\ContentPageRepositoryInterface;
+use App\Contracts\Repositories\GalleryItemRepositoryInterface;
 use App\Contracts\Repositories\NewsRepositoryInterface;
 use App\Contracts\Repositories\ProjectRepositoryInterface;
 use App\Contracts\Repositories\ServiceRepositoryInterface;
@@ -25,6 +26,7 @@ use App\Contracts\Services\VacancyServiceInterface;
 use App\Models\User;
 use App\Repositories\ApplicationFormRepository;
 use App\Repositories\ContentPageRepository;
+use App\Repositories\GalleryItemRepository;
 use App\Repositories\NewsRepository;
 use App\Repositories\ProjectRepository;
 use App\Repositories\ServiceRepository;
@@ -37,6 +39,7 @@ use App\Services\ApplicationFormSupplementaryDocumentService;
 use App\Services\AuthService;
 use App\Services\ContentPageService;
 use App\Services\FeedbackService;
+use App\Services\GalleryItemService;
 use App\Services\NewsService;
 use App\Services\ProjectService;
 use App\Services\ServiceService;
@@ -57,6 +60,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(VacancyRepositoryInterface::class, VacancyRepository::class);
         $this->app->bind(ApplicationFormRepositoryInterface::class, ApplicationFormRepository::class);
         $this->app->bind(ContentPageRepositoryInterface::class, ContentPageRepository::class);
+        $this->app->bind(GalleryItemRepositoryInterface::class, GalleryItemRepository::class);
 
         $this->app->bind(AuthServiceInterface::class, AuthService::class);
         $this->app->bind(NewsServiceInterface::class, NewsService::class);
@@ -71,6 +75,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AdminUserServiceInterface::class, AdminUserService::class);
         $this->app->bind(ContentPageServiceInterface::class, ContentPageService::class);
         $this->app->bind(AnalyticsServiceInterface::class, AnalyticsService::class);
+        $this->app->bind(GalleryItemServiceInterface::class, GalleryItemService::class);
     }
 
     public function boot(): void

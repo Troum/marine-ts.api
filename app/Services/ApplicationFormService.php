@@ -10,11 +10,14 @@ use App\Enums\ApplicationFormStatus;
 use App\Mail\DocumentsRequestedMail;
 use App\Models\ApplicationForm;
 use App\Models\Vacancy;
+use App\Support\ApplicationFormPdfTemplateData;
 use App\Support\RequestedDocumentCatalog;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+use Spatie\LaravelPdf\Enums\Format;
+use Spatie\LaravelPdf\Facades\Pdf;
 
 final class ApplicationFormService implements ApplicationFormServiceInterface
 {
@@ -100,6 +103,19 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
         Mail::to($fresh->email)->send(new DocumentsRequestedMail($fresh, $uploadUrl, $documentKeys));
 
         return $fresh;
+    }
+
+    public function pdfDownload(ApplicationForm $applicationForm)
+    {
+        $slug = $applicationForm->vacancy?->slug
+            ? Str::slug($applicationForm->vacancy->slug)
+            : 'vacancy';
+        $filename = 'anketa-'.$applicationForm->id.'-'.$slug.'.pdf';
+
+        return Pdf::view('pdf.application-form', ApplicationFormPdfTemplateData::make($applicationForm))
+            ->format(Format::A4)
+            ->name($filename)
+            ->download();
     }
 
     /**

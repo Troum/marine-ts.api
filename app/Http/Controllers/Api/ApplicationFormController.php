@@ -13,16 +13,11 @@ use App\Http\Resources\ApplicationFormResource;
 use App\Models\ApplicationForm;
 use App\Models\Vacancy;
 use App\Support\AdminListQuery;
-use App\Support\ApplicationFormPdfTemplateData;
 use App\Support\RequestedDocumentCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Mycro\Core\Exceptions\DtoHydrationException;
 use Mycro\Core\Exceptions\ReadonlyPropertyUpdateException;
-use Spatie\LaravelPdf\Enums\Format;
-use Spatie\LaravelPdf\Facades\Pdf;
-use Spatie\LaravelPdf\PdfBuilder;
 
 class ApplicationFormController extends Controller
 {
@@ -98,19 +93,11 @@ class ApplicationFormController extends Controller
     /**
      * PDF с данными анкеты (тот же шаблон, что уходит в письмо crewing).
      */
-    public function downloadPdf(ApplicationForm $application_form): Pdf|PdfBuilder
+    public function downloadPdf(ApplicationForm $application_form)
     {
         $this->authorize('view', $application_form);
 
-        $slug = $application_form->vacancy?->slug
-            ? Str::slug($application_form->vacancy->slug)
-            : 'vacancy';
-        $filename = 'anketa-'.$application_form->id.'-'.$slug.'.pdf';
-
-        return Pdf::view('pdf.application-form', ApplicationFormPdfTemplateData::make($application_form))
-            ->format(Format::A4)
-            ->name($filename)
-            ->download();
+        return $this->applicationFormService->pdfDownload($application_form);
     }
 
     public function updateStatus(

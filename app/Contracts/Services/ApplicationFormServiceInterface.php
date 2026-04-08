@@ -28,4 +28,11 @@ interface ApplicationFormServiceInterface
      * @param  list<string>  $documentKeys
      */
     public function requestDocuments(ApplicationForm $applicationForm, array $documentKeys): ApplicationForm;
+
+    /**
+     * PDF с данными анкеты (тот же шаблон, что уходит в письмо crewing).
+     *
+     * @return mixed ответ Spatie Laravel PDF (download)
+     */
+    public function pdfDownload(ApplicationForm $applicationForm);
 }

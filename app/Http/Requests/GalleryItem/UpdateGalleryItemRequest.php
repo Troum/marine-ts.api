@@ -23,6 +23,7 @@ class UpdateGalleryItemRequest extends FormRequest
         return [
             'alt' => ['sometimes', 'nullable', 'string', 'max:500'],
             'sortOrder' => ['sometimes', 'integer', 'min:0', 'max:999999'],
+            'translations' => ['sometimes', 'array'],
         ];
     }
 }

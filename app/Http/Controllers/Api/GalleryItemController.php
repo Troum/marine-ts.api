@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Contracts\Services\GalleryItemServiceInterface;
+use App\DTO\GalleryItem\StoreGalleryItemDto;
+use App\DTO\GalleryItem\UpdateGalleryItemDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GalleryItem\DestroyGalleryItemRequest;
 use App\Http\Requests\GalleryItem\ReplaceGalleryImageRequest;
@@ -9,128 +12,68 @@ use App\Http\Requests\GalleryItem\StoreGalleryItemRequest;
 use App\Http\Requests\GalleryItem\UpdateGalleryItemRequest;
 use App\Http\Resources\GalleryItemResource;
 use App\Models\GalleryItem;
-use App\Support\MarineLocale;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\Storage;
+use Mycro\Core\Exceptions\DtoHydrationException;
+use Mycro\Core\Exceptions\ReadonlyPropertyUpdateException;
 
 class GalleryItemController extends Controller
 {
+    public function __construct(
+        private readonly GalleryItemServiceInterface $galleryItemService,
+    ) {}
+
     public function index(): AnonymousResourceCollection
     {
-        return $this->galleryCollection();
+        return GalleryItemResource::collection($this->galleryItemService->listForManage());
     }
 
     /** Список для админки: те же данные, путь `/gallery/manage` включает полные `translations` в JSON. */
     public function manageIndex(): AnonymousResourceCollection
     {
-        return $this->galleryCollection();
+        return GalleryItemResource::collection($this->galleryItemService->listForManage());
     }
 
-    private function galleryCollection(): AnonymousResourceCollection
-    {
-        $items = GalleryItem::query()
-            ->with('translations')
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get();
-
-        return GalleryItemResource::collection($items);
-    }
-
+    /**
+     * @throws ReadonlyPropertyUpdateException
+     * @throws DtoHydrationException
+     */
     public function store(StoreGalleryItemRequest $request): JsonResponse
     {
-        $file = $request->file('image');
-        $path = $file->store('gallery', 'public');
+        $validated = $request->validated();
+        $image = $request->file('image');
+        unset($validated['image']);
 
-        $sortOrder = $request->input('sortOrder');
-        if ($sortOrder === null || $sortOrder === '') {
-            $max = (int) GalleryItem::query()->max('sort_order');
-            $sortOrder = $max + 1;
-        }
+        $dto = new StoreGalleryItemDto($validated);
+        $item = $this->galleryItemService->create($dto, $image);
 
-        $item = GalleryItem::query()->create([
-            'path' => $path,
-            'sort_order' => (int) $sortOrder,
-        ]);
-
-        $this->syncGalleryTranslations($item, $request);
-
-        return (new GalleryItemResource($item->load('translations')))->response()->setStatusCode(201);
+        return new GalleryItemResource($item)->response()->setStatusCode(201);
     }
 
+    /**
+     * @throws ReadonlyPropertyUpdateException
+     * @throws DtoHydrationException
+     */
     public function update(UpdateGalleryItemRequest $request, GalleryItem $gallery_item): GalleryItemResource
     {
-        $data = [];
-        if ($request->has('sortOrder')) {
-            $data['sort_order'] = (int) $request->input('sortOrder');
-        }
-        if ($data !== []) {
-            $gallery_item->update($data);
-        }
+        $validated = $request->validated();
+        $dto = new UpdateGalleryItemDto($validated);
+        $item = $this->galleryItemService->update($gallery_item, $dto, array_keys($validated));
 
-        if ($request->has('alt') || $request->has('translations')) {
-            $this->syncGalleryTranslations($gallery_item->fresh(), $request);
-        }
-
-        return new GalleryItemResource($gallery_item->fresh()->load('translations'));
+        return new GalleryItemResource($item);
     }
 
     public function replaceImage(ReplaceGalleryImageRequest $request, GalleryItem $gallery_item): GalleryItemResource
     {
-        $file = $request->file('image');
-        $newPath = $file->store('gallery', 'public');
+        $item = $this->galleryItemService->replaceImage($gallery_item, $request->file('image'));
 
-        $oldPath = $gallery_item->path;
-        $gallery_item->update(['path' => $newPath]);
-
-        $this->deleteStoredFileIfManaged($oldPath);
-
-        return new GalleryItemResource($gallery_item->fresh()->load('translations'));
+        return new GalleryItemResource($item);
     }
 
     public function destroy(DestroyGalleryItemRequest $request, GalleryItem $gallery_item): JsonResponse
     {
-        $path = $gallery_item->path;
-        $gallery_item->delete();
-
-        $this->deleteStoredFileIfManaged($path);
+        $this->galleryItemService->delete($gallery_item);
 
         return response()->json(['ok' => true]);
-    }
-
-    private function deleteStoredFileIfManaged(string $path): void
-    {
-        if (str_starts_with($path, '/')) {
-            return;
-        }
-        Storage::disk('public')->delete($path);
-    }
-
-    /**
-     * @param  \Illuminate\Http\Request  $request
-     */
-    private function syncGalleryTranslations(GalleryItem $item, $request): void
-    {
-        $translations = $request->input('translations');
-        if (is_array($translations)) {
-            foreach ($translations as $locale => $row) {
-                if (! is_array($row) || ! MarineLocale::isSupported((string) $locale)) {
-                    continue;
-                }
-                $item->translations()->updateOrCreate(
-                    ['locale' => (string) $locale],
-                    ['alt' => (string) ($row['alt'] ?? '')]
-                );
-            }
-
-            return;
-        }
-
-        $default = (string) config('marine.default_locale');
-        $item->translations()->updateOrCreate(
-            ['locale' => $default],
-            ['alt' => (string) $request->input('alt', '')]
-        );
     }
 }

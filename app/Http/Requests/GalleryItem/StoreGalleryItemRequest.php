@@ -21,6 +21,7 @@ class StoreGalleryItemRequest extends FormRequest
             'image' => ['required', 'file', 'image', 'max:20480'],
             'alt' => ['nullable', 'string', 'max:500'],
             'sortOrder' => ['nullable', 'integer', 'min:0', 'max:999999'],
+            'translations' => ['sometimes', 'array'],
         ];
     }
 }
