@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Contracts\Repositories\ContentPageRepositoryInterface;
 use App\Models\ContentPage;
+use App\Models\ContentPageTranslation;
 use App\Support\AdminListQuery;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,13 +18,25 @@ final class ContentPageRepository extends BaseRepository implements ContentPageR
 
     public function index(int $perPage = 15, int $page = 1, array $filters = []): LengthAwarePaginator
     {
-        $query = $this->model->newQuery()->with('contentable');
-
+        $query = $this->model->newQuery()->with(['contentable.translations', 'translations']);
         $query = $this->applyIndexFilters($query, $filters);
 
         $orderColumn = $filters['order_column'] ?? 'sort_order';
         $orderDir = $filters['order_direction'] ?? 'asc';
-        $query->orderBy($orderColumn, $orderDir);
+        $defaultLocale = (string) config('marine.default_locale');
+
+        if ($orderColumn === 'title') {
+            $query->orderBy(
+                ContentPageTranslation::query()
+                    ->select('title')
+                    ->whereColumn('content_page_id', 'content_pages.id')
+                    ->where('locale', $defaultLocale)
+                    ->limit(1),
+                $orderDir
+            );
+        } else {
+            $query->orderBy($orderColumn, $orderDir);
+        }
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
@@ -34,12 +47,19 @@ final class ContentPageRepository extends BaseRepository implements ContentPageR
      */
     protected function applyIndexFilters(Builder $query, array $filters): Builder
     {
+        $defaultLocale = (string) config('marine.default_locale');
+
         if (! empty($filters['search'])) {
             $p = AdminListQuery::likePattern($filters['search']);
-            $query->where(function (Builder $q) use ($p): void {
-                $q->where('title', 'like', $p)
-                    ->orWhere('slug', 'like', $p)
-                    ->orWhere('excerpt', 'like', $p);
+            $query->where(function (Builder $q) use ($p, $defaultLocale): void {
+                $q->where('slug', 'like', $p)
+                    ->orWhereHas('translations', function (Builder $tq) use ($p, $defaultLocale): void {
+                        $tq->where('locale', $defaultLocale)
+                            ->where(function (Builder $qq) use ($p): void {
+                                $qq->where('title', 'like', $p)
+                                    ->orWhere('excerpt', 'like', $p);
+                            });
+                    });
             });
         }
 
@@ -55,6 +75,7 @@ final class ContentPageRepository extends BaseRepository implements ContentPageR
         return $this->model->newQuery()
             ->where('slug', $slug)
             ->where('is_published', true)
+            ->with('translations')
             ->first();
     }
 }

@@ -9,13 +9,13 @@ class NewsObserver
 {
     public function saving(News $news): void
     {
-        if (blank($news->slug)) {
-            $base = News::slugFromTitle($news->title);
-        } else {
-            $base = Str::slug($news->slug);
-            if ($base === '') {
-                $base = News::slugFromTitle($news->title);
-            }
+        if (! filled($news->slug)) {
+            return;
+        }
+
+        $base = Str::slug($news->slug);
+        if ($base === '') {
+            return;
         }
 
         $news->slug = News::ensureUniqueSlug($base, $news->exists ? $news->id : null);

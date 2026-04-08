@@ -11,13 +11,14 @@ final class ApplicationFormPdfPresenter
      */
     public static function rows(ApplicationForm $form): array
     {
-        $form->loadMissing('vacancy');
+        $form->loadMissing('vacancy.translations');
         $payload = $form->payload ?? [];
+        $vacancyTitle = $form->vacancy?->translationForLocale((string) config('marine.default_locale'))?->title ?? '—';
 
         $rows = [
             ['ID анкеты', (string) $form->id],
             ['Дата отправки', $form->created_at?->format('d.m.Y H:i') ?? '—'],
-            ['Вакансия', $form->vacancy?->title ?? '—'],
+            ['Вакансия', $vacancyTitle],
             ['ФИО', $form->full_name],
             ['Email', $form->email],
             ['Телефон', $form->phone ?? '—'],

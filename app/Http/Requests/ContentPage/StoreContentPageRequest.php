@@ -14,33 +14,6 @@ class StoreContentPageRequest extends FormRequest
         return $this->user()->can('create', ContentPage::class);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function rules(): array
-    {
-        return [
-            'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', Rule::unique('content_pages', 'slug')],
-            'title' => ['required', 'string', 'max:500'],
-            'excerpt' => ['nullable', 'string', 'max:2000'],
-            'body' => ['required', 'string', 'max:500000'],
-            'isPublished' => ['sometimes', 'boolean'],
-            'is_published' => ['sometimes', 'boolean'],
-            'sortOrder' => ['sometimes', 'integer', 'min:0', 'max:999999'],
-            'sort_order' => ['sometimes', 'integer', 'min:0', 'max:999999'],
-            'seoTitle' => ['nullable', 'string', 'max:255'],
-            'seo_title' => ['nullable', 'string', 'max:255'],
-            'seoDescription' => ['nullable', 'string', 'max:8000'],
-            'seo_description' => ['nullable', 'string', 'max:8000'],
-            'seoKeywords' => ['nullable', 'string', 'max:500'],
-            'seo_keywords' => ['nullable', 'string', 'max:500'],
-            'contentableType' => ['sometimes', 'nullable', 'string', 'in:service,project'],
-            'contentableId' => ['sometimes', 'nullable', 'integer', 'min:1'],
-            'contentable_type' => ['sometimes', 'nullable', 'string', 'in:service,project'],
-            'contentable_id' => ['sometimes', 'nullable', 'integer', 'min:1'],
-        ];
-    }
-
     protected function prepareForValidation(): void
     {
         if ($this->has('is_published') && ! $this->has('isPublished')) {
@@ -55,6 +28,61 @@ class StoreContentPageRequest extends FormRequest
         if ($this->has('contentable_id') && ! $this->has('contentableId')) {
             $this->merge(['contentableId' => $this->input('contentable_id')]);
         }
+
+        $default = (string) config('marine.default_locale');
+        if (! $this->has('translations') && $this->has('title')) {
+            $this->merge([
+                'translations' => [
+                    $default => [
+                        'title' => $this->input('title'),
+                        'excerpt' => $this->input('excerpt'),
+                        'body' => $this->input('body'),
+                        'seoTitle' => $this->input('seoTitle') ?? $this->input('seo_title'),
+                        'seoDescription' => $this->input('seoDescription') ?? $this->input('seo_description'),
+                        'seoKeywords' => $this->input('seoKeywords') ?? $this->input('seo_keywords'),
+                    ],
+                ],
+            ]);
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function rules(): array
+    {
+        $locales = config('marine.locales');
+        if (! is_array($locales)) {
+            $locales = ['ru', 'en'];
+        }
+        $default = (string) config('marine.default_locale');
+
+        $rules = [
+            'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', Rule::unique('content_pages', 'slug')],
+            'isPublished' => ['sometimes', 'boolean'],
+            'is_published' => ['sometimes', 'boolean'],
+            'sortOrder' => ['sometimes', 'integer', 'min:0', 'max:999999'],
+            'sort_order' => ['sometimes', 'integer', 'min:0', 'max:999999'],
+            'translations' => ['required', 'array'],
+            'contentableType' => ['sometimes', 'nullable', 'string', 'in:service,project'],
+            'contentableId' => ['sometimes', 'nullable', 'integer', 'min:1'],
+            'contentable_type' => ['sometimes', 'nullable', 'string', 'in:service,project'],
+            'contentable_id' => ['sometimes', 'nullable', 'integer', 'min:1'],
+        ];
+
+        foreach ($locales as $loc) {
+            $isDefault = $loc === $default;
+            $prefix = "translations.$loc";
+            $rules[$prefix] = [$isDefault ? 'required' : 'nullable', 'array'];
+            $rules["$prefix.title"] = [$isDefault ? 'required' : 'sometimes', 'nullable', 'string', 'max:500'];
+            $rules["$prefix.excerpt"] = ['nullable', 'string', 'max:2000'];
+            $rules["$prefix.body"] = [$isDefault ? 'required' : 'sometimes', 'nullable', 'string', 'max:500000'];
+            $rules["$prefix.seoTitle"] = ['nullable', 'string', 'max:255'];
+            $rules["$prefix.seoDescription"] = ['nullable', 'string', 'max:8000'];
+            $rules["$prefix.seoKeywords"] = ['nullable', 'string', 'max:500'];
+        }
+
+        return $rules;
     }
 
     public function withValidator(\Illuminate\Validation\Validator $validator): void

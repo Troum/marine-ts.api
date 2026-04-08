@@ -19,7 +19,15 @@ class ApplicationFormResource extends JsonResource
         return [
             'id' => $this->id,
             'vacancyId' => $this->vacancy_id,
-            'vacancyTitle' => $this->whenLoaded('vacancy', fn () => $this->vacancy?->title),
+            'vacancyTitle' => $this->whenLoaded('vacancy', function () {
+                $v = $this->vacancy;
+                if ($v === null) {
+                    return null;
+                }
+                $v->loadMissing('translations');
+
+                return $v->translationForLocale((string) config('marine.default_locale'))?->title;
+            }),
             'vacancySlug' => $this->whenLoaded('vacancy', fn () => $this->vacancy?->slug),
             'fullName' => $this->full_name,
             'email' => $this->email,

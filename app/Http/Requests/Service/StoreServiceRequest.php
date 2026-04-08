@@ -12,21 +12,57 @@ class StoreServiceRequest extends FormRequest
         return $this->user()->can('create', Service::class);
     }
 
+    protected function prepareForValidation(): void
+    {
+        $default = (string) config('marine.default_locale');
+        if (! $this->has('translations') && $this->has('title')) {
+            $this->merge([
+                'translations' => [
+                    $default => [
+                        'title' => $this->input('title'),
+                        'description' => $this->input('description'),
+                        'features' => $this->input('features'),
+                        'seoTitle' => $this->input('seoTitle') ?? $this->input('seo_title'),
+                        'seoDescription' => $this->input('seoDescription') ?? $this->input('seo_description'),
+                        'seoKeywords' => $this->input('seoKeywords') ?? $this->input('seo_keywords'),
+                    ],
+                ],
+            ]);
+        }
+    }
+
     /**
      * @return array<string, mixed>
      */
     public function rules(): array
     {
-        return [
-            'title' => ['required', 'string', 'max:500'],
-            'description' => ['required', 'string'],
-            'features' => ['required', 'array', 'min:1'],
-            'features.*' => ['string', 'max:500'],
+        $locales = config('marine.locales');
+        if (! is_array($locales)) {
+            $locales = ['ru', 'en'];
+        }
+        $default = (string) config('marine.default_locale');
+
+        $rules = [
             'iconKey' => ['required', 'string', 'max:64'],
             'sortOrder' => ['sometimes', 'integer', 'min:0', 'max:999999'],
-            'seoTitle' => ['nullable', 'string', 'max:255'],
-            'seoDescription' => ['nullable', 'string', 'max:8000'],
-            'seoKeywords' => ['nullable', 'string', 'max:500'],
+            'translations' => ['required', 'array'],
         ];
+
+        foreach ($locales as $loc) {
+            $isDefault = $loc === $default;
+            $prefix = "translations.$loc";
+            $rules[$prefix] = [$isDefault ? 'required' : 'nullable', 'array'];
+            $rules["$prefix.title"] = [$isDefault ? 'required' : 'sometimes', 'nullable', 'string', 'max:500'];
+            $rules["$prefix.description"] = [$isDefault ? 'required' : 'sometimes', 'nullable', 'string'];
+            $rules["$prefix.features"] = $isDefault
+                ? ['required', 'array', 'min:1']
+                : ['sometimes', 'nullable', 'array'];
+            $rules["$prefix.features.*"] = ['string', 'max:500'];
+            $rules["$prefix.seoTitle"] = ['sometimes', 'nullable', 'string', 'max:255'];
+            $rules["$prefix.seoDescription"] = ['sometimes', 'nullable', 'string', 'max:8000'];
+            $rules["$prefix.seoKeywords"] = ['sometimes', 'nullable', 'string', 'max:500'];
+        }
+
+        return $rules;
     }
 }

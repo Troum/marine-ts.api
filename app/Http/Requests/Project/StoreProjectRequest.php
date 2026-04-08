@@ -12,23 +12,59 @@ class StoreProjectRequest extends FormRequest
         return $this->user()->can('create', Project::class);
     }
 
+    protected function prepareForValidation(): void
+    {
+        $default = (string) config('marine.default_locale');
+        if (! $this->has('translations') && $this->has('title')) {
+            $this->merge([
+                'translations' => [
+                    $default => [
+                        'title' => $this->input('title'),
+                        'typeLabel' => $this->input('typeLabel') ?? $this->input('type_label'),
+                        'location' => $this->input('location'),
+                        'description' => $this->input('description'),
+                        'stats' => $this->input('stats'),
+                        'seoTitle' => $this->input('seoTitle') ?? $this->input('seo_title'),
+                        'seoDescription' => $this->input('seoDescription') ?? $this->input('seo_description'),
+                        'seoKeywords' => $this->input('seoKeywords') ?? $this->input('seo_keywords'),
+                    ],
+                ],
+            ]);
+        }
+    }
+
     /**
      * @return array<string, mixed>
      */
     public function rules(): array
     {
-        return [
-            'title' => ['required', 'string', 'max:500'],
+        $locales = config('marine.locales');
+        if (! is_array($locales)) {
+            $locales = ['ru', 'en'];
+        }
+        $default = (string) config('marine.default_locale');
+
+        $rules = [
             'type' => ['required', 'string', 'in:hull,engine,electrical'],
-            'typeLabel' => ['required', 'string', 'max:255'],
-            'location' => ['required', 'string', 'max:255'],
             'date' => ['required', 'string', 'max:32'],
-            'description' => ['required', 'string'],
-            'stats' => ['required', 'array'],
             'image' => ['nullable', 'string', 'max:500'],
-            'seoTitle' => ['nullable', 'string', 'max:255'],
-            'seoDescription' => ['nullable', 'string', 'max:8000'],
-            'seoKeywords' => ['nullable', 'string', 'max:500'],
+            'translations' => ['required', 'array'],
         ];
+
+        foreach ($locales as $loc) {
+            $isDefault = $loc === $default;
+            $prefix = "translations.$loc";
+            $rules[$prefix] = [$isDefault ? 'required' : 'nullable', 'array'];
+            $rules["$prefix.title"] = [$isDefault ? 'required' : 'sometimes', 'nullable', 'string', 'max:500'];
+            $rules["$prefix.typeLabel"] = [$isDefault ? 'required' : 'sometimes', 'nullable', 'string', 'max:255'];
+            $rules["$prefix.location"] = [$isDefault ? 'required' : 'sometimes', 'nullable', 'string', 'max:255'];
+            $rules["$prefix.description"] = [$isDefault ? 'required' : 'sometimes', 'nullable', 'string'];
+            $rules["$prefix.stats"] = [$isDefault ? 'required' : 'sometimes', 'nullable', 'array'];
+            $rules["$prefix.seoTitle"] = ['sometimes', 'nullable', 'string', 'max:255'];
+            $rules["$prefix.seoDescription"] = ['sometimes', 'nullable', 'string', 'max:8000'];
+            $rules["$prefix.seoKeywords"] = ['sometimes', 'nullable', 'string', 'max:500'];
+        }
+
+        return $rules;
     }
 }

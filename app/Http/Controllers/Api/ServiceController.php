@@ -36,7 +36,7 @@ class ServiceController extends Controller
 
     public function show(Service $service): ServiceResource
     {
-        return new ServiceResource($service->load('contentPage'));
+        return new ServiceResource($service->load(['translations', 'contentPage.translations']));
     }
 
     public function store(StoreServiceRequest $request)
@@ -44,7 +44,7 @@ class ServiceController extends Controller
         $dto = new StoreServiceDto($request->validated());
         $service = $this->serviceService->create($dto);
 
-        return (new ServiceResource($service->load('contentPage')))->response()->setStatusCode(201);
+        return (new ServiceResource($service->load(['translations', 'contentPage.translations'])))->response()->setStatusCode(201);
     }
 
     public function update(UpdateServiceRequest $request, Service $service): ServiceResource
@@ -52,7 +52,7 @@ class ServiceController extends Controller
         $dto = new UpdateServiceDto($request->validated());
         $service = $this->serviceService->update($service, $dto);
 
-        return new ServiceResource($service->load('contentPage'));
+        return new ServiceResource($service->load(['translations', 'contentPage.translations']));
     }
 
     public function destroy(DestroyServiceRequest $request, Service $service)

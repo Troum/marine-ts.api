@@ -39,7 +39,7 @@ class ProjectController extends Controller
 
     public function show(Project $project): ProjectResource
     {
-        return new ProjectResource($project->load('contentPage'));
+        return new ProjectResource($project->load(['translations', 'contentPage.translations']));
     }
 
     /**
@@ -51,7 +51,7 @@ class ProjectController extends Controller
         $dto = new StoreProjectDto($request->validated());
         $project = $this->projectService->create($dto);
 
-        return new ProjectResource($project->load('contentPage'))->response()->setStatusCode(201);
+        return new ProjectResource($project->load(['translations', 'contentPage.translations']))->response()->setStatusCode(201);
     }
 
     /**
@@ -63,7 +63,7 @@ class ProjectController extends Controller
         $dto = new UpdateProjectDto($request->validated());
         $project = $this->projectService->update($project, $dto);
 
-        return new ProjectResource($project->load('contentPage'));
+        return new ProjectResource($project->load(['translations', 'contentPage.translations']));
     }
 
     public function destroy(DestroyProjectRequest $request, Project $project): JsonResponse

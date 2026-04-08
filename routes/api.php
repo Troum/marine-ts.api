@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ApplicationFormController;
 use App\Http\Controllers\Api\ApplicationFormDocumentUploadController;
 use App\Http\Controllers\Api\ApplicationFormSupplementaryDownloadController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ContactSettingsController;
 use App\Http\Controllers\Api\ContentPageController;
 use App\Http\Controllers\Api\FeedbackController;
 use App\Http\Controllers\Api\GalleryItemController;
@@ -54,6 +55,8 @@ Route::get('/seo/pages/{slug}', [SiteSeoController::class, 'show'])->where('slug
 
 Route::get('/gallery', [GalleryItemController::class, 'index']);
 
+Route::get('/contact-settings', [ContactSettingsController::class, 'show']);
+
 Route::get('/content-pages', [ContentPageController::class, 'publicIndex']);
 /** Не совпадать с сегментом `manage` (иначе перехватит GET /content-pages/manage). */
 Route::get('/content-pages/{slug}', [ContentPageController::class, 'publicShow'])->where('slug', '(?!manage$)[a-z0-9\-]+');
@@ -83,6 +86,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/vacancies/{vacancy}', [VacancyController::class, 'destroy']);
 
     Route::get('/news/manage/{news}', [NewsController::class, 'show'])->whereNumber('news');
+    Route::get('/projects/manage/{project}', [ProjectController::class, 'show'])->whereNumber('project');
+    Route::get('/services/manage/{service}', [ServiceController::class, 'show'])->whereNumber('service');
+    Route::get('/seo/manage/pages/{slug}', [SiteSeoController::class, 'show'])->where('slug', '[a-z0-9-]+');
+    Route::get('/gallery/manage', [GalleryItemController::class, 'manageIndex']);
     Route::post('/news', [NewsController::class, 'store']);
     Route::put('/news/{news}', [NewsController::class, 'update']);
     Route::delete('/news/{news}', [NewsController::class, 'destroy']);
@@ -96,6 +103,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/services/{service}', [ServiceController::class, 'destroy']);
 
     Route::put('/seo/pages/{slug}', [SiteSeoController::class, 'update'])->where('slug', '[a-z0-9-]+');
+
+    Route::put('/contact-settings', [ContactSettingsController::class, 'update']);
 
     Route::get('/analytics/manage/summary', [AnalyticsController::class, 'manageSummary']);
 

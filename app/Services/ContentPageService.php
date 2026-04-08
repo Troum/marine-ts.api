@@ -8,8 +8,11 @@ use App\DTO\ContentPage\StoreContentPageDto;
 use App\DTO\ContentPage\UpdateContentPageDto;
 use App\Models\ContentPage;
 use App\Support\ContentableMorph;
+use App\Support\MarineLocale;
+use App\Support\NormalizeTranslationInput;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 final class ContentPageService implements ContentPageServiceInterface
 {
@@ -25,43 +28,62 @@ final class ContentPageService implements ContentPageServiceInterface
     public function getById(int|string $id): ContentPage
     {
         /** @var ContentPage */
-        return $this->contentPageRepository->getOne($id);
+        $page = $this->contentPageRepository->getOne($id);
+        $page->load('translations');
+        if ($page->contentable !== null) {
+            $page->contentable->load('translations');
+        }
+
+        return $page->load('contentable');
     }
 
     public function findPublishedBySlug(string $slug): ?ContentPage
     {
-        return $this->contentPageRepository->findPublishedBySlug($slug);
+        $page = $this->contentPageRepository->findPublishedBySlug($slug);
+        if ($page === null) {
+            return null;
+        }
+        $page->load('translations');
+        if ($page->contentable !== null) {
+            $page->contentable->load('translations');
+        }
+
+        return $page;
     }
 
     public function listPublishedForPublic(): Collection
     {
         return ContentPage::query()
             ->where('is_published', true)
+            ->with('translations')
             ->orderBy('sort_order')
-            ->orderBy('title')
+            ->orderBy('id')
             ->get();
     }
 
     public function create(StoreContentPageDto $dto, ?string $contentableShortType = null, ?int $contentableId = null): ContentPage
     {
-        /** @var ContentPage */
-        $page = $this->contentPageRepository->createOne([
-            'slug' => $dto->slug,
-            'title' => $dto->title,
-            'excerpt' => $dto->excerpt,
-            'body' => $dto->body,
-            'is_published' => $dto->is_published,
-            'sort_order' => $dto->sort_order,
-            'seo_title' => $dto->seo_title,
-            'seo_description' => $dto->seo_description,
-            'seo_keywords' => $dto->seo_keywords,
-        ]);
-
-        if ($contentableShortType !== null && $contentableId !== null) {
-            $this->syncContentableLink($page, $contentableShortType, $contentableId);
+        $default = (string) config('marine.default_locale');
+        if (! isset($dto->translations[$default])) {
+            throw new \InvalidArgumentException("translations.$default is required.");
         }
 
-        return $page->fresh()->load('contentable');
+        return DB::transaction(function () use ($dto, $contentableShortType, $contentableId): ContentPage {
+            /** @var ContentPage $page */
+            $page = $this->contentPageRepository->createOne([
+                'slug' => $dto->slug,
+                'is_published' => $dto->is_published,
+                'sort_order' => $dto->sort_order,
+            ]);
+
+            $this->syncContentPageTranslations($page, $dto->translations);
+
+            if ($contentableShortType !== null && $contentableId !== null) {
+                $this->syncContentableLink($page->fresh() ?? $page, $contentableShortType, $contentableId);
+            }
+
+            return ($page->fresh() ?? $page)->load(['translations', 'contentable.translations']);
+        });
     }
 
     public function update(
@@ -73,8 +95,15 @@ final class ContentPageService implements ContentPageServiceInterface
     ): ContentPage {
         $data = $dto->toArray();
         $payload = $this->filterNulls($data);
+        unset($payload['translations']);
         if ($payload !== []) {
             $this->contentPageRepository->updateOne($page, $payload);
+        }
+
+        if ($dto->translations !== null) {
+            DB::transaction(function () use ($page, $dto): void {
+                $this->syncContentPageTranslations($page, $dto->translations);
+            });
         }
 
         if ($syncContentable) {
@@ -85,7 +114,18 @@ final class ContentPageService implements ContentPageServiceInterface
             }
         }
 
-        return ($page->fresh() ?? $page)->load('contentable');
+        $fresh = $page->fresh() ?? $page;
+        $fresh->load('translations');
+        if ($fresh->contentable !== null) {
+            $fresh->contentable->load('translations');
+        }
+
+        return $fresh->load('contentable');
+    }
+
+    public function delete(ContentPage $page): void
+    {
+        $this->contentPageRepository->deleteOne($page);
     }
 
     private function unlinkContentable(ContentPage $page): void
@@ -114,9 +154,24 @@ final class ContentPageService implements ContentPageServiceInterface
         ]);
     }
 
-    public function delete(ContentPage $page): void
+    /**
+     * @param  array<string, array<string, mixed>>  $translations
+     */
+    private function syncContentPageTranslations(ContentPage $page, array $translations): void
     {
-        $this->contentPageRepository->deleteOne($page);
+        foreach (config('marine.locales') as $locale) {
+            if (! isset($translations[$locale])) {
+                continue;
+            }
+            if (! MarineLocale::isSupported((string) $locale)) {
+                continue;
+            }
+            $row = NormalizeTranslationInput::contentPageLocaleRow($translations[$locale]);
+            $page->translations()->updateOrCreate(
+                ['locale' => $locale],
+                $row
+            );
+        }
     }
 
     /**

@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ResolvesTranslations;
 use App\Observers\NewsObserver;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -15,21 +17,23 @@ use Illuminate\Support\Str;
 #[Table(name: 'news')]
 #[Fillable([
     'slug',
-    'title',
-    'excerpt',
-    'content',
     'date',
     'author',
-    'category',
     'featured',
     'image',
-    'seo_title',
-    'seo_description',
-    'seo_keywords',
 ])]
 class News extends Model
 {
+    use ResolvesTranslations;
     use SoftDeletes;
+
+    /**
+     * @return HasMany<NewsTranslation, $this>
+     */
+    public function translations(): HasMany
+    {
+        return $this->hasMany(NewsTranslation::class);
+    }
 
     /**
      * @return string[]

@@ -2,27 +2,32 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ResolvesTranslations;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'slug',
-    'title',
-    'excerpt',
-    'body',
     'is_published',
     'sort_order',
-    'seo_title',
-    'seo_description',
-    'seo_keywords',
     'contentable_type',
     'contentable_id',
 ])]
 class ContentPage extends Model
 {
+    use ResolvesTranslations;
     use SoftDeletes;
+
+    /**
+     * @return HasMany<ContentPageTranslation, $this>
+     */
+    public function translations(): HasMany
+    {
+        return $this->hasMany(ContentPageTranslation::class);
+    }
 
     /**
      * @return MorphTo<Model, $this>

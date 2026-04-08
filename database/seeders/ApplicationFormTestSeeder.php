@@ -12,7 +12,7 @@ class ApplicationFormTestSeeder extends Seeder
 {
     public function run(): void
     {
-        $vacancy = Vacancy::query()->orderBy('id')->first();
+        $vacancy = Vacancy::query()->with('translations')->orderBy('id')->first();
         if ($vacancy === null) {
             $this->command->warn('Нет вакансий в БД. Сначала выполните: php artisan db:seed --class=VacanciesSeeder');
 
@@ -20,6 +20,8 @@ class ApplicationFormTestSeeder extends Seeder
         }
 
         $repo = app(ApplicationFormRepositoryInterface::class);
+
+        $positionTitle = $vacancy->translationForLocale((string) config('marine.default_locale'))?->title ?? '';
 
         $existing = ApplicationForm::query()->where('email', 'test.anketa@marine-ts.local')->first();
         if ($existing !== null) {
@@ -30,7 +32,7 @@ class ApplicationFormTestSeeder extends Seeder
                 'phone' => '+7 900 123-45-67',
                 'payload' => [
                     'vacancySlug' => $vacancy->slug,
-                    'positionApplyingFor' => $vacancy->title,
+                    'positionApplyingFor' => $positionTitle,
                     'lastName' => 'Иванов',
                     'firstName' => 'Пётр',
                     'fathersName' => 'Сергеевич',
@@ -48,7 +50,7 @@ class ApplicationFormTestSeeder extends Seeder
                 'phone' => '+7 900 123-45-67',
                 'payload' => [
                     'vacancySlug' => $vacancy->slug,
-                    'positionApplyingFor' => $vacancy->title,
+                    'positionApplyingFor' => $positionTitle,
                     'lastName' => 'Иванов',
                     'firstName' => 'Пётр',
                     'fathersName' => 'Сергеевич',

@@ -2,27 +2,30 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ResolvesTranslations;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'title',
     'type',
-    'type_label',
-    'location',
     'date',
-    'description',
-    'stats',
     'image',
-    'seo_title',
-    'seo_description',
-    'seo_keywords',
 ])]
 class Project extends Model
 {
+    use ResolvesTranslations;
     use SoftDeletes;
+
+    /**
+     * @return HasMany<ProjectTranslation, $this>
+     */
+    public function translations(): HasMany
+    {
+        return $this->hasMany(ProjectTranslation::class);
+    }
 
     /**
      * @return MorphOne<ContentPage, $this>
@@ -30,15 +33,5 @@ class Project extends Model
     public function contentPage(): MorphOne
     {
         return $this->morphOne(ContentPage::class, 'contentable');
-    }
-
-    /**
-     * @return string[]
-     */
-    protected function casts(): array
-    {
-        return [
-            'stats' => 'array',
-        ];
     }
 }

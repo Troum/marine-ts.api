@@ -15,8 +15,11 @@ class MarineDataSeeder extends Seeder
     {
         DB::table('personal_access_tokens')->delete();
         User::query()->delete();
-        News::query()->delete();
-        Project::query()->delete();
+
+        News::withTrashed()->get()->each->forceDelete();
+        Project::withTrashed()->get()->each->forceDelete();
+
+        $locale = (string) config('marine.default_locale', 'ru');
 
         $admin = User::create([
             'name' => 'Admin',
@@ -84,7 +87,25 @@ class MarineDataSeeder extends Seeder
         ];
 
         foreach ($newsItems as $row) {
-            News::create($row);
+            /** @var News $news */
+            $news = News::query()->create([
+                'slug' => News::ensureUniqueSlug(News::slugFromTitle($row['title'])),
+                'date' => $row['date'],
+                'author' => $row['author'],
+                'featured' => $row['featured'],
+                'image' => null,
+            ]);
+
+            $news->translations()->create([
+                'locale' => $locale,
+                'title' => $row['title'],
+                'excerpt' => $row['excerpt'],
+                'content' => $row['content'],
+                'category' => $row['category'],
+                'seo_title' => null,
+                'seo_description' => null,
+                'seo_keywords' => null,
+            ]);
         }
 
         $projects = [
@@ -145,7 +166,24 @@ class MarineDataSeeder extends Seeder
         ];
 
         foreach ($projects as $row) {
-            Project::create($row);
+            /** @var Project $project */
+            $project = Project::query()->create([
+                'type' => $row['type'],
+                'date' => $row['date'],
+                'image' => null,
+            ]);
+
+            $project->translations()->create([
+                'locale' => $locale,
+                'title' => $row['title'],
+                'type_label' => $row['type_label'],
+                'location' => $row['location'],
+                'description' => $row['description'],
+                'stats' => $row['stats'],
+                'seo_title' => null,
+                'seo_description' => null,
+                'seo_keywords' => null,
+            ]);
         }
     }
 }

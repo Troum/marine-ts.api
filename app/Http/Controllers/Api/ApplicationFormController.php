@@ -92,7 +92,7 @@ class ApplicationFormController extends Controller
     {
         $this->authorize('view', $application_form);
 
-        return new ApplicationFormResource($application_form->load('vacancy'));
+        return new ApplicationFormResource($application_form->load('vacancy.translations'));
     }
 
     /**
@@ -122,7 +122,7 @@ class ApplicationFormController extends Controller
             $request->validated('status'),
         );
 
-        return new ApplicationFormResource($applicationForm->load('vacancy'));
+        return new ApplicationFormResource($applicationForm->load('vacancy.translations'));
     }
 
     public function documentRequestCatalog(): JsonResponse
@@ -143,6 +143,6 @@ class ApplicationFormController extends Controller
             $request->validated('document_keys'),
         );
 
-        return new ApplicationFormResource($applicationForm->load('vacancy'));
+        return new ApplicationFormResource($applicationForm->load('vacancy.translations'));
     }
 }

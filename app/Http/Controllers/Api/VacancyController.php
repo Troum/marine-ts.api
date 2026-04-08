@@ -51,7 +51,7 @@ class VacancyController extends Controller
 
     public function show(Vacancy $vacancy): VacancyResource
     {
-        return new VacancyResource($vacancy);
+        return new VacancyResource($vacancy->load('translations'));
     }
 
     public function showBySlug(string $slug): VacancyResource

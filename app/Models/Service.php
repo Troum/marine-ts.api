@@ -2,24 +2,29 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ResolvesTranslations;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'title',
-    'description',
-    'features',
     'icon_key',
     'sort_order',
-    'seo_title',
-    'seo_description',
-    'seo_keywords',
 ])]
 class Service extends Model
 {
+    use ResolvesTranslations;
     use SoftDeletes;
+
+    /**
+     * @return HasMany<ServiceTranslation, $this>
+     */
+    public function translations(): HasMany
+    {
+        return $this->hasMany(ServiceTranslation::class);
+    }
 
     /**
      * @return MorphOne<ContentPage, $this>
@@ -35,7 +40,6 @@ class Service extends Model
     protected function casts(): array
     {
         return [
-            'features' => 'array',
             'sort_order' => 'integer',
         ];
     }

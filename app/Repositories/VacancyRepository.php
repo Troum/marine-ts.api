@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Contracts\Repositories\VacancyRepositoryInterface;
 use App\Models\Vacancy;
+use App\Models\VacancyTranslation;
 use App\Support\AdminListQuery;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,6 +21,8 @@ final class VacancyRepository extends BaseRepository implements VacancyRepositor
         $query = $this->model->newQuery();
         $query = $this->applyIndexFilters($query, $filters);
 
+        $query->with('translations');
+
         $allowed = ['id', 'title', 'slug', 'sort_order', 'is_published', 'location', 'employment_type', 'created_at', 'updated_at'];
         $col = $filters['order_column'] ?? 'sort_order';
         if (! in_array($col, $allowed, true)) {
@@ -29,7 +32,27 @@ final class VacancyRepository extends BaseRepository implements VacancyRepositor
         if (! in_array($dir, ['asc', 'desc'], true)) {
             $dir = 'asc';
         }
-        $query->orderBy($col, $dir)->orderByDesc('id');
+
+        $defaultLocale = (string) config('marine.default_locale');
+        $translationField = match ($col) {
+            'title' => 'title',
+            'location' => 'location',
+            'employment_type' => 'employment_type',
+            default => null,
+        };
+
+        if ($translationField !== null) {
+            $query->orderBy(
+                VacancyTranslation::query()
+                    ->select($translationField)
+                    ->whereColumn('vacancy_id', 'vacancies.id')
+                    ->where('locale', $defaultLocale)
+                    ->limit(1),
+                $dir
+            )->orderByDesc('id');
+        } else {
+            $query->orderBy($col, $dir)->orderByDesc('id');
+        }
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
@@ -49,20 +72,27 @@ final class VacancyRepository extends BaseRepository implements VacancyRepositor
             $query->where('is_published', true);
         }
 
-        if (! empty($filters['with_application_forms_count'])) {
-            $query->withCount('applicationForms');
-        }
-
         if (array_key_exists('published_filter', $filters)) {
             $query->where('is_published', (bool) $filters['published_filter']);
         }
 
+        if (! empty($filters['with_application_forms_count'])) {
+            $query->withCount('applicationForms');
+        }
+
+        $defaultLocale = (string) config('marine.default_locale');
+
         if (! empty($filters['search'])) {
             $p = AdminListQuery::likePattern($filters['search']);
-            $query->where(function (Builder $q) use ($p): void {
-                $q->where('title', 'like', $p)
-                    ->orWhere('slug', 'like', $p)
-                    ->orWhere('location', 'like', $p);
+            $query->where(function (Builder $q) use ($p, $defaultLocale): void {
+                $q->where('slug', 'like', $p)
+                    ->orWhereHas('translations', function (Builder $tq) use ($p, $defaultLocale): void {
+                        $tq->where('locale', $defaultLocale)
+                            ->where(function (Builder $qq) use ($p): void {
+                                $qq->where('title', 'like', $p)
+                                    ->orWhere('location', 'like', $p);
+                            });
+                    });
             });
         }
 

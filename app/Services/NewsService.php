@@ -7,7 +7,10 @@ use App\Contracts\Services\NewsServiceInterface;
 use App\DTO\News\StoreNewsDto;
 use App\DTO\News\UpdateNewsDto;
 use App\Models\News;
+use App\Support\MarineLocale;
+use App\Support\NormalizeTranslationInput;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 final class NewsService implements NewsServiceInterface
 {
@@ -23,52 +26,88 @@ final class NewsService implements NewsServiceInterface
     public function getById(int|string $id): News
     {
         /** @var News */
-        return $this->newsRepository->getOne($id);
+        return $this->newsRepository->getOne($id)->load('translations');
     }
 
     public function getBySlug(string $slug): News
     {
         /** @var News */
-        return News::query()->where('slug', $slug)->firstOrFail();
+        return News::query()->where('slug', $slug)->with('translations')->firstOrFail();
     }
 
     public function create(StoreNewsDto $dto): News
     {
-        $data = [
-            'title' => $dto->title,
-            'slug' => $dto->slug,
-            'excerpt' => $dto->excerpt,
-            'content' => $dto->content,
-            'date' => $dto->date,
-            'author' => $dto->author,
-            'category' => $dto->category,
-            'featured' => $dto->featured,
-            'image' => $dto->image,
-            'seo_title' => $dto->seo_title,
-            'seo_description' => $dto->seo_description,
-            'seo_keywords' => $dto->seo_keywords,
-        ];
+        $default = (string) config('marine.default_locale');
+        if (! isset($dto->translations[$default])) {
+            throw new \InvalidArgumentException("translations.$default is required.");
+        }
 
-        return $this->newsRepository->createOne(array_filter(
-            $data,
-            static fn (mixed $v): bool => $v !== null
-        ));
+        $defaultRow = $dto->translations[$default];
+        $slug = $dto->slug ?? News::ensureUniqueSlug(
+            News::slugFromTitle(is_array($defaultRow) ? (string) ($defaultRow['title'] ?? '') : ''),
+        );
+
+        return DB::transaction(function () use ($dto, $slug, $default): News {
+            /** @var News $news */
+            $news = $this->newsRepository->createOne(array_filter([
+                'slug' => $slug,
+                'date' => $dto->date,
+                'author' => $dto->author,
+                'featured' => $dto->featured,
+                'image' => $dto->image,
+            ], static fn (mixed $v): bool => $v !== null));
+
+            $this->syncNewsTranslations($news, $dto->translations);
+
+            return $news->load('translations');
+        });
     }
 
     public function update(News $news, UpdateNewsDto $dto): News
     {
-        $payload = $this->filterNulls($dto->toArray());
-        if ($payload === []) {
-            return $news->fresh() ?? $news;
+        $payload = $this->filterNulls([
+            'slug' => $dto->slug,
+            'date' => $dto->date,
+            'author' => $dto->author,
+            'featured' => $dto->featured,
+            'image' => $dto->image,
+        ]);
+        if ($payload !== []) {
+            $this->newsRepository->updateOne($news, $payload);
         }
-        $this->newsRepository->updateOne($news, $payload);
 
-        return $news->refresh();
+        if ($dto->translations !== null) {
+            DB::transaction(function () use ($news, $dto): void {
+                $this->syncNewsTranslations($news, $dto->translations);
+            });
+        }
+
+        return $news->refresh()->load('translations');
     }
 
     public function delete(News $news, bool $soft = true): void
     {
         $this->newsRepository->deleteOne($news, $soft);
+    }
+
+    /**
+     * @param  array<string, array<string, mixed>>  $translations
+     */
+    private function syncNewsTranslations(News $news, array $translations): void
+    {
+        foreach (config('marine.locales') as $locale) {
+            if (! isset($translations[$locale])) {
+                continue;
+            }
+            if (! MarineLocale::isSupported((string) $locale)) {
+                continue;
+            }
+            $row = NormalizeTranslationInput::newsLocaleRow($translations[$locale]);
+            $news->translations()->updateOrCreate(
+                ['locale' => $locale],
+                $row
+            );
+        }
     }
 
     /**

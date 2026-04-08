@@ -16,6 +16,28 @@ class UpdateVacancyRequest extends FormRequest
         return $this->user()->can('update', $vacancy);
     }
 
+    protected function prepareForValidation(): void
+    {
+        $default = (string) config('marine.default_locale');
+        if (! $this->has('translations') && $this->has('title')) {
+            $this->merge([
+                'translations' => [
+                    $default => [
+                        'title' => $this->input('title'),
+                        'excerpt' => $this->input('excerpt'),
+                        'content' => $this->input('content'),
+                        'requirements' => $this->input('requirements'),
+                        'location' => $this->input('location'),
+                        'employmentType' => $this->input('employmentType') ?? $this->input('employment_type'),
+                        'seoTitle' => $this->input('seoTitle') ?? $this->input('seo_title'),
+                        'seoDescription' => $this->input('seoDescription') ?? $this->input('seo_description'),
+                        'seoKeywords' => $this->input('seoKeywords') ?? $this->input('seo_keywords'),
+                    ],
+                ],
+            ]);
+        }
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -24,20 +46,33 @@ class UpdateVacancyRequest extends FormRequest
         /** @var Vacancy $vacancy */
         $vacancy = $this->route('vacancy');
 
-        return [
-            'title' => ['sometimes', 'string', 'max:500'],
+        $locales = config('marine.locales');
+        if (! is_array($locales)) {
+            $locales = ['ru', 'en'];
+        }
+
+        $rules = [
             'slug' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('vacancies', 'slug')->ignore($vacancy->id)],
-            'excerpt' => ['sometimes', 'string'],
-            'content' => ['nullable', 'string'],
-            'requirements' => ['nullable', 'array'],
-            'requirements.*' => ['string', 'max:2000'],
-            'location' => ['nullable', 'string', 'max:255'],
-            'employmentType' => ['nullable', 'string', 'max:255'],
             'sortOrder' => ['sometimes', 'integer', 'min:0'],
             'isPublished' => ['sometimes', 'boolean'],
-            'seoTitle' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'seoDescription' => ['sometimes', 'nullable', 'string', 'max:8000'],
-            'seoKeywords' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'translations' => ['sometimes', 'array'],
         ];
+
+        foreach ($locales as $loc) {
+            $prefix = "translations.$loc";
+            $rules[$prefix] = ['sometimes', 'nullable', 'array'];
+            $rules["$prefix.title"] = ['sometimes', 'nullable', 'string', 'max:500'];
+            $rules["$prefix.excerpt"] = ['sometimes', 'nullable', 'string'];
+            $rules["$prefix.content"] = ['nullable', 'string'];
+            $rules["$prefix.requirements"] = ['nullable', 'array'];
+            $rules["$prefix.requirements.*"] = ['string', 'max:2000'];
+            $rules["$prefix.location"] = ['nullable', 'string', 'max:255'];
+            $rules["$prefix.employmentType"] = ['nullable', 'string', 'max:255'];
+            $rules["$prefix.seoTitle"] = ['sometimes', 'nullable', 'string', 'max:255'];
+            $rules["$prefix.seoDescription"] = ['sometimes', 'nullable', 'string', 'max:8000'];
+            $rules["$prefix.seoKeywords"] = ['sometimes', 'nullable', 'string', 'max:500'];
+        }
+
+        return $rules;
     }
 }

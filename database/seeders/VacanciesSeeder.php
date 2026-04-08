@@ -77,10 +77,31 @@ class VacanciesSeeder extends Seeder
             ],
         ];
 
+        $locale = (string) config('marine.default_locale', 'ru');
+
         foreach ($rows as $row) {
-            Vacancy::updateOrCreate(
+            /** @var Vacancy $vacancy */
+            $vacancy = Vacancy::query()->updateOrCreate(
                 ['slug' => $row['slug']],
-                $row
+                [
+                    'sort_order' => $row['sort_order'],
+                    'is_published' => $row['is_published'],
+                ]
+            );
+
+            $vacancy->translations()->updateOrCreate(
+                ['locale' => $locale],
+                [
+                    'title' => $row['title'],
+                    'excerpt' => $row['excerpt'],
+                    'content' => $row['content'],
+                    'requirements' => $row['requirements'],
+                    'location' => $row['location'],
+                    'employment_type' => $row['employment_type'],
+                    'seo_title' => null,
+                    'seo_description' => null,
+                    'seo_keywords' => null,
+                ]
             );
         }
     }

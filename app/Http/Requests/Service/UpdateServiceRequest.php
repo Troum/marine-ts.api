@@ -15,21 +15,53 @@ class UpdateServiceRequest extends FormRequest
         return $this->user()->can('update', $service);
     }
 
+    protected function prepareForValidation(): void
+    {
+        $default = (string) config('marine.default_locale');
+        if (! $this->has('translations') && $this->has('title')) {
+            $this->merge([
+                'translations' => [
+                    $default => [
+                        'title' => $this->input('title'),
+                        'description' => $this->input('description'),
+                        'features' => $this->input('features'),
+                        'seoTitle' => $this->input('seoTitle') ?? $this->input('seo_title'),
+                        'seoDescription' => $this->input('seoDescription') ?? $this->input('seo_description'),
+                        'seoKeywords' => $this->input('seoKeywords') ?? $this->input('seo_keywords'),
+                    ],
+                ],
+            ]);
+        }
+    }
+
     /**
      * @return array<string, mixed>
      */
     public function rules(): array
     {
-        return [
-            'title' => ['sometimes', 'string', 'max:500'],
-            'description' => ['sometimes', 'string'],
-            'features' => ['sometimes', 'array', 'min:1'],
-            'features.*' => ['string', 'max:500'],
+        $locales = config('marine.locales');
+        if (! is_array($locales)) {
+            $locales = ['ru', 'en'];
+        }
+
+        $rules = [
             'iconKey' => ['sometimes', 'string', 'max:64'],
             'sortOrder' => ['sometimes', 'integer', 'min:0', 'max:999999'],
-            'seoTitle' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'seoDescription' => ['sometimes', 'nullable', 'string', 'max:8000'],
-            'seoKeywords' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'translations' => ['sometimes', 'array'],
         ];
+
+        foreach ($locales as $loc) {
+            $prefix = "translations.$loc";
+            $rules[$prefix] = ['sometimes', 'nullable', 'array'];
+            $rules["$prefix.title"] = ['sometimes', 'nullable', 'string', 'max:500'];
+            $rules["$prefix.description"] = ['sometimes', 'nullable', 'string'];
+            $rules["$prefix.features"] = ['sometimes', 'nullable', 'array'];
+            $rules["$prefix.features.*"] = ['string', 'max:500'];
+            $rules["$prefix.seoTitle"] = ['sometimes', 'nullable', 'string', 'max:255'];
+            $rules["$prefix.seoDescription"] = ['sometimes', 'nullable', 'string', 'max:8000'];
+            $rules["$prefix.seoKeywords"] = ['sometimes', 'nullable', 'string', 'max:500'];
+        }
+
+        return $rules;
     }
 }

@@ -9,6 +9,8 @@ class SiteSeoPagesSeeder extends Seeder
 {
     public function run(): void
     {
+        $locale = (string) config('marine.default_locale', 'ru');
+
         $pages = [
             ['slug' => 'home', 'label' => 'Главная', 'seo_title' => 'Marine Technical Solutions — судоремонт и техобслуживание', 'seo_description' => 'Комплексный судоремонт, диагностика и инжиниринг для морского флота.', 'seo_keywords' => 'судоремонт, морской сервис, MTS'],
             ['slug' => 'about', 'label' => 'О компании', 'seo_title' => 'О компании — Marine Technical Solutions', 'seo_description' => 'История, команда и сертификаты Marine Technical Solutions.', 'seo_keywords' => 'о компании, судоремонт'],
@@ -23,8 +25,14 @@ class SiteSeoPagesSeeder extends Seeder
         ];
 
         foreach ($pages as $row) {
-            SiteSeoPage::updateOrCreate(
+            /** @var SiteSeoPage $page */
+            $page = SiteSeoPage::query()->updateOrCreate(
                 ['slug' => $row['slug']],
+                []
+            );
+
+            $page->translations()->updateOrCreate(
+                ['locale' => $locale],
                 [
                     'label' => $row['label'],
                     'seo_title' => $row['seo_title'],

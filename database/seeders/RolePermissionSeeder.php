@@ -22,12 +22,13 @@ class RolePermissionSeeder extends Seeder
         $manageUsers = Permission::firstOrCreate(['name' => 'manage users']);
         $manageContentPages = Permission::firstOrCreate(['name' => 'manage content pages']);
         $manageGallery = Permission::firstOrCreate(['name' => 'manage gallery']);
+        $manageContacts = Permission::firstOrCreate(['name' => 'manage contacts']);
 
         $admin = Role::firstOrCreate(['name' => 'admin']);
-        $admin->syncPermissions([$manageNews, $manageProjects, $manageServices, $manageSeo, $manageVacancies, $manageFeedback, $manageUsers, $manageContentPages, $manageGallery]);
+        $admin->syncPermissions([$manageNews, $manageProjects, $manageServices, $manageSeo, $manageVacancies, $manageFeedback, $manageUsers, $manageContentPages, $manageGallery, $manageContacts]);
 
         $contentManager = Role::firstOrCreate(['name' => 'content_manager']);
-        $contentManager->syncPermissions([$manageNews, $manageProjects, $manageServices, $manageSeo, $manageVacancies, $manageFeedback, $manageContentPages, $manageGallery]);
+        $contentManager->syncPermissions([$manageNews, $manageProjects, $manageServices, $manageSeo, $manageVacancies, $manageFeedback, $manageContentPages, $manageGallery, $manageContacts]);
 
         $hrManager = Role::firstOrCreate(['name' => 'hr_manager']);
         $hrManager->syncPermissions([$manageVacancies]);

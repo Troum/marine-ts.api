@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             SiteSeoPagesSeeder::class,
             VacanciesSeeder::class,
             MarineDataSeeder::class,
+            SiteSettingsContactSeeder::class,
         ]);
     }
 }

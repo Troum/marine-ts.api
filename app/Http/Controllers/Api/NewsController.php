@@ -36,7 +36,7 @@ class NewsController extends Controller
 
     public function show(News $news): NewsResource
     {
-        return new NewsResource($news);
+        return new NewsResource($news->load('translations'));
     }
 
     public function showBySlug(string $slug): NewsResource

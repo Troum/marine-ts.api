@@ -2,16 +2,23 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ResolvesTranslations;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'slug',
-    'label',
-    'seo_title',
-    'seo_description',
-    'seo_keywords',
 ])]
 class SiteSeoPage extends Model
 {
+    use ResolvesTranslations;
+
+    /**
+     * @return HasMany<SiteSeoPageTranslation, $this>
+     */
+    public function translations(): HasMany
+    {
+        return $this->hasMany(SiteSeoPageTranslation::class);
+    }
 }

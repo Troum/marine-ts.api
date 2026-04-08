@@ -44,7 +44,7 @@ class ContentPageController extends Controller
             return response()->json(['message' => 'Страница не найдена'], 404);
         }
 
-        return new ContentPageResource($page->load('contentable'));
+        return new ContentPageResource($page->load(['contentable.translations', 'translations']));
     }
 
     public function manageIndex(IndexContentPagesRequest $request): ContentPageCollection
@@ -66,7 +66,7 @@ class ContentPageController extends Controller
 
     public function showManage(ShowContentPageManageRequest $request, ContentPage $contentPage): ContentPageResource
     {
-        return new ContentPageResource($contentPage->load('contentable'));
+        return new ContentPageResource($contentPage->load(['contentable.translations', 'translations']));
     }
 
     /**
@@ -80,7 +80,7 @@ class ContentPageController extends Controller
         $dto = new StoreContentPageDto($this->normalizeValidatedForDto($this->stripContentableKeys($validated)));
         $page = $this->contentPageService->create($dto, $link[0], $link[1]);
 
-        return (new ContentPageResource($page))->response()->setStatusCode(201);
+        return (new ContentPageResource($page->load(['contentable.translations', 'translations'])))->response()->setStatusCode(201);
     }
 
     /**
@@ -100,7 +100,7 @@ class ContentPageController extends Controller
             $sync['id'],
         );
 
-        return new ContentPageResource($page);
+        return new ContentPageResource($page->load(['contentable.translations', 'translations']));
     }
 
     public function destroy(DestroyContentPageRequest $request, ContentPage $contentPage)

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ResolvesTranslations;
 use App\Observers\VacancyObserver;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -14,20 +15,12 @@ use Illuminate\Support\Str;
 #[ObservedBy([VacancyObserver::class])]
 #[Fillable([
     'slug',
-    'title',
-    'excerpt',
-    'content',
-    'requirements',
-    'location',
-    'employment_type',
     'sort_order',
     'is_published',
-    'seo_title',
-    'seo_description',
-    'seo_keywords',
 ])]
 class Vacancy extends Model
 {
+    use ResolvesTranslations;
     use SoftDeletes;
 
     /**
@@ -36,10 +29,17 @@ class Vacancy extends Model
     protected function casts(): array
     {
         return [
-            'requirements' => 'array',
             'sort_order' => 'integer',
             'is_published' => 'boolean',
         ];
+    }
+
+    /**
+     * @return HasMany<VacancyTranslation, $this>
+     */
+    public function translations(): HasMany
+    {
+        return $this->hasMany(VacancyTranslation::class);
     }
 
     public static function slugFromTitle(string $title): string
@@ -72,4 +72,3 @@ class Vacancy extends Model
         return $this->hasMany(ApplicationForm::class);
     }
 }
-
