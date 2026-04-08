@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ApplicationFormSupplementaryDownloadController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContentPageController;
 use App\Http\Controllers\Api\FeedbackController;
+use App\Http\Controllers\Api\GalleryItemController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ServiceController;
@@ -50,6 +51,8 @@ Route::post('/application-forms/document-upload/{token}', [ApplicationFormDocume
 
 Route::get('/seo/pages', [SiteSeoController::class, 'index']);
 Route::get('/seo/pages/{slug}', [SiteSeoController::class, 'show'])->where('slug', '[a-z0-9-]+');
+
+Route::get('/gallery', [GalleryItemController::class, 'index']);
 
 Route::get('/content-pages', [ContentPageController::class, 'publicIndex']);
 /** Не совпадать с сегментом `manage` (иначе перехватит GET /content-pages/manage). */
@@ -108,6 +111,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/content-pages', [ContentPageController::class, 'store']);
     Route::put('/content-pages/{content_page}', [ContentPageController::class, 'update'])->whereNumber('content_page');
     Route::delete('/content-pages/{content_page}', [ContentPageController::class, 'destroy'])->whereNumber('content_page');
+
+    Route::post('/gallery', [GalleryItemController::class, 'store']);
+    Route::put('/gallery/{gallery_item}', [GalleryItemController::class, 'update'])->whereNumber('gallery_item');
+    Route::post('/gallery/{gallery_item}/image', [GalleryItemController::class, 'replaceImage'])->whereNumber('gallery_item');
+    Route::delete('/gallery/{gallery_item}', [GalleryItemController::class, 'destroy'])->whereNumber('gallery_item');
 });
 
 Route::get('/vacancies/{slug}', [VacancyController::class, 'showBySlug'])->where('slug', '[a-z0-9\-]+');
