@@ -17,6 +17,7 @@ use App\Contracts\Services\ApplicationFormSupplementaryDocumentServiceInterface;
 use App\Contracts\Services\AuthServiceInterface;
 use App\Contracts\Services\ContentPageServiceInterface;
 use App\Contracts\Services\FeedbackServiceInterface;
+use App\Contracts\Services\GalleryItemServiceInterface;
 use App\Contracts\Services\NewsServiceInterface;
 use App\Contracts\Services\ProjectServiceInterface;
 use App\Contracts\Services\ServiceServiceInterface;
