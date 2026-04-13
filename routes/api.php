@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ContactSettingsController;
 use App\Http\Controllers\Api\ContentPageController;
 use App\Http\Controllers\Api\FeedbackController;
 use App\Http\Controllers\Api\GalleryItemController;
+use App\Http\Controllers\Api\MediaUploadController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ServiceController;
@@ -120,6 +121,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/content-pages', [ContentPageController::class, 'store']);
     Route::put('/content-pages/{content_page}', [ContentPageController::class, 'update'])->whereNumber('content_page');
     Route::delete('/content-pages/{content_page}', [ContentPageController::class, 'destroy'])->whereNumber('content_page');
+
+    Route::post('/media', [MediaUploadController::class, 'store'])->middleware('throttle:30,1');
 
     Route::post('/gallery', [GalleryItemController::class, 'store']);
     Route::put('/gallery/{gallery_item}', [GalleryItemController::class, 'update'])->whereNumber('gallery_item');
