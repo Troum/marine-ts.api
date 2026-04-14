@@ -28,6 +28,9 @@ class StoreContentPageRequest extends FormRequest
         if ($this->has('contentable_id') && ! $this->has('contentableId')) {
             $this->merge(['contentableId' => $this->input('contentable_id')]);
         }
+        if ($this->has('show_inquiry_form') && ! $this->has('showInquiryForm')) {
+            $this->merge(['showInquiryForm' => $this->boolean('show_inquiry_form')]);
+        }
 
         $default = (string) config('marine.default_locale');
         if (! $this->has('translations') && $this->has('title')) {
@@ -68,6 +71,8 @@ class StoreContentPageRequest extends FormRequest
             'contentableId' => ['sometimes', 'nullable', 'integer', 'min:1'],
             'contentable_type' => ['sometimes', 'nullable', 'string', 'in:service,project'],
             'contentable_id' => ['sometimes', 'nullable', 'integer', 'min:1'],
+            'showInquiryForm' => ['sometimes', 'boolean'],
+            'show_inquiry_form' => ['sometimes', 'boolean'],
         ];
 
         foreach ($locales as $loc) {

@@ -74,6 +74,7 @@ final class ContentPageService implements ContentPageServiceInterface
                 'slug' => $dto->slug,
                 'is_published' => $dto->is_published,
                 'sort_order' => $dto->sort_order,
+                'show_inquiry_form' => $dto->show_inquiry_form,
             ]);
 
             $this->syncContentPageTranslations($page, $dto->translations);

@@ -1,0 +1,40 @@
+# Репозиторий API (корень = Laravel). Сервер: /var/www/api-marine-ts.mytests.space
+# Secrets: SSH_HOST, SSH_USER, SSH_KEY
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_PATH: /var/www/api-marine-ts.mytests.space
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+            cd ${{ env.DEPLOY_PATH }}
+
+            php artisan down --retry=15
+
+            git pull origin main
+
+            composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+            php artisan migrate --force
+            php artisan optimize
+
+            php artisan queue:restart
+
+            sudo systemctl reload php8.4-fpm
+            sudo systemctl reload nginx
+
+            php artisan up

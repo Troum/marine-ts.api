@@ -19,6 +19,10 @@ final class StoreContentPageDto extends BaseDto
     #[DefaultValue(0)]
     public readonly int $sort_order;
 
+    #[MapProperty(from: ['showInquiryForm', 'show_inquiry_form'], required: false)]
+    #[DefaultValue(false)]
+    public readonly bool $show_inquiry_form;
+
     /**
      * @var array<string, array<string, mixed>>
      */

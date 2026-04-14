@@ -16,6 +16,9 @@ final class UpdateContentPageDto extends BaseDto
     #[MapProperty(from: ['sortOrder', 'sort_order'], required: false)]
     public readonly ?int $sort_order;
 
+    #[MapProperty(from: ['showInquiryForm', 'show_inquiry_form'], required: false)]
+    public readonly ?bool $show_inquiry_form;
+
     /**
      * @var array<string, array<string, mixed>>|null
      */

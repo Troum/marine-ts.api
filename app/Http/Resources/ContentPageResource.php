@@ -33,6 +33,7 @@ class ContentPageResource extends JsonResource
             'body' => $t?->body,
             'isPublished' => $this->is_published,
             'sortOrder' => $this->sort_order,
+            'showInquiryForm' => (bool) $this->show_inquiry_form,
             'seoTitle' => $t?->seo_title,
             'seoDescription' => $t?->seo_description,
             'seoKeywords' => $t?->seo_keywords,
