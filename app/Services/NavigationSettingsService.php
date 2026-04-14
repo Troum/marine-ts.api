@@ -6,7 +6,7 @@ use App\Models\SiteSetting;
 
 class NavigationSettingsService
 {
-    public const KEY = 'navigation';
+    public const string KEY = 'navigation';
 
     /**
      * @return array{main: list<array{path: string, label: array{ru: string, en: string}}>, more: list<array{path: string, label: array{ru: string, en: string}}>}
@@ -83,18 +83,7 @@ class NavigationSettingsService
      */
     public function defaultNavigation(): array
     {
-        return [
-            'main' => [
-                ['path' => '/', 'label' => ['ru' => 'Главная', 'en' => 'Home']],
-                ['path' => '/about', 'label' => ['ru' => 'О компании', 'en' => 'About']],
-                ['path' => '/services', 'label' => ['ru' => 'Услуги', 'en' => 'Services']],
-                ['path' => '/contacts', 'label' => ['ru' => 'Контакты', 'en' => 'Contacts']],
-            ],
-            'more' => [
-                ['path' => '/projects', 'label' => ['ru' => 'Проекты', 'en' => 'Projects']],
-                ['path' => '/gallery', 'label' => ['ru' => 'Галерея', 'en' => 'Gallery']],
-                ['path' => '/news', 'label' => ['ru' => 'Новости', 'en' => 'News']],
-            ],
-        ];
+        /** @var array{main: list<array{path: string, label: array{ru: string, en: string}}>, more: list<array{path: string, label: array{ru: string, en: string}}>} */
+        return config('navigations');
     }
 }
