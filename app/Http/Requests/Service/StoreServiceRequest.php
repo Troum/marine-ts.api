@@ -14,6 +14,14 @@ class StoreServiceRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $raw = $this->input('translations');
+        if (is_string($raw)) {
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+                $this->merge(['translations' => $decoded]);
+            }
+        }
+
         $default = (string) config('marine.default_locale');
         if (! $this->has('translations') && $this->has('title')) {
             $this->merge([
@@ -46,6 +54,7 @@ class StoreServiceRequest extends FormRequest
             'iconKey' => ['required', 'string', 'max:64'],
             'sortOrder' => ['sometimes', 'integer', 'min:0', 'max:999999'],
             'translations' => ['required', 'array'],
+            'image' => ['sometimes', 'nullable', 'file', 'image', 'max:20480'],
         ];
 
         foreach ($locales as $loc) {

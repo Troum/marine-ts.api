@@ -9,7 +9,7 @@ class NavigationSettingsService
     public const string KEY = 'navigation';
 
     /**
-     * @return array{main: list<array{path: string, label: array{ru: string, en: string}}>, more: list<array{path: string, label: array{ru: string, en: string}}>}
+     * @return array{main: list<array<string, mixed>>, more: list<array<string, mixed>>}
      */
     public function getNavigation(): array
     {
@@ -23,7 +23,7 @@ class NavigationSettingsService
 
     /**
      * @param  array{main?: mixed, more?: mixed}  $data
-     * @return array{main: list<array{path: string, label: array{ru: string, en: string}}>, more: list<array{path: string, label: array{ru: string, en: string}}>}
+     * @return array{main: list<array<string, mixed>>, more: list<array<string, mixed>>}
      */
     public function updateNavigation(array $data): array
     {
@@ -38,7 +38,7 @@ class NavigationSettingsService
 
     /**
      * @param  array<string, mixed>  $value
-     * @return array{main: list<array{path: string, label: array{ru: string, en: string}}>, more: list<array{path: string, label: array{ru: string, en: string}}>}
+     * @return array{main: list<array<string, mixed>>, more: list<array<string, mixed>>}
      */
     public function normalize(array $value): array
     {
@@ -60,30 +60,61 @@ class NavigationSettingsService
 
     /**
      * @param  mixed  $row
-     * @return array{path: string, label: array{ru: string, en: string}}
+     * @return array<string, mixed>
      */
-    private function normalizeItem(mixed $row): array
+    private function normalizeItem(mixed $row, bool $allowChildren = true): array
     {
         if (! is_array($row)) {
             return ['path' => '/', 'label' => ['ru' => '', 'en' => '']];
         }
-        $path = isset($row['path']) ? trim((string) $row['path']) : '/';
+        $path = $this->normalizeNavPath(isset($row['path']) ? (string) $row['path'] : '');
         $label = $row['label'] ?? [];
         $ru = is_array($label) ? (string) ($label['ru'] ?? '') : '';
         $en = is_array($label) ? (string) ($label['en'] ?? '') : '';
 
-        return [
-            'path' => $path === '' ? '/' : $path,
+        $out = [
+            'path' => $path,
             'label' => ['ru' => $ru, 'en' => $en],
         ];
+
+        if ($allowChildren && ! empty($row['children']) && is_array($row['children'])) {
+            $children = array_values(array_map(
+                fn ($child) => $this->normalizeItem($child, false),
+                $row['children'],
+            ));
+            if ($children !== []) {
+                $out['children'] = $children;
+            }
+        }
+
+        return $out;
+    }
+
+    private function normalizeNavPath(string $raw): string
+    {
+        $path = trim($raw);
+        if ($path === '' || $path === '/') {
+            return '/';
+        }
+        if ($path === '#') {
+            return '#';
+        }
+        if (preg_match('#^https?://#i', $path)) {
+            return $path;
+        }
+        if (! str_starts_with($path, '/')) {
+            return '/'.$path;
+        }
+
+        return $path;
     }
 
     /**
-     * @return array{main: list<array{path: string, label: array{ru: string, en: string}}>, more: list<array{path: string, label: array{ru: string, en: string}}>}
+     * @return array{main: list<array<string, mixed>>, more: list<array<string, mixed>>}
      */
     public function defaultNavigation(): array
     {
-        /** @var array{main: list<array{path: string, label: array{ru: string, en: string}}>, more: list<array{path: string, label: array{ru: string, en: string}}>} */
+        /** @var array{main: list<array<string, mixed>>, more: list<array<string, mixed>>} */
         return config('navigations');
     }
 }

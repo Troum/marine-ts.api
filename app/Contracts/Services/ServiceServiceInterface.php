@@ -6,6 +6,7 @@ use App\DTO\Service\StoreServiceDto;
 use App\DTO\Service\UpdateServiceDto;
 use App\Models\Service;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\UploadedFile;
 
 interface ServiceServiceInterface
 {
@@ -16,9 +17,9 @@ interface ServiceServiceInterface
 
     public function getById(int|string $id): Service;
 
-    public function create(StoreServiceDto $dto): Service;
+    public function create(StoreServiceDto $dto, ?UploadedFile $image = null): Service;
 
-    public function update(Service $service, UpdateServiceDto $dto): Service;
+    public function update(Service $service, UpdateServiceDto $dto, ?UploadedFile $image = null): Service;
 
     public function delete(Service $service, bool $soft = true): void;
 }

@@ -18,4 +18,7 @@ final class UpdateServiceDto extends BaseDto
      */
     #[MapProperty(from: ['translations'], required: false)]
     public readonly ?array $translations;
+
+    #[MapProperty(from: ['removeImage', 'remove_image', 'clear_image'], required: false)]
+    public readonly ?bool $clear_image;
 }

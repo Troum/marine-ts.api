@@ -17,6 +17,19 @@ class UpdateServiceRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $raw = $this->input('translations');
+        if (is_string($raw)) {
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+                $this->merge(['translations' => $decoded]);
+            }
+        }
+
+        $remove = $this->input('removeImage');
+        if ($remove === '1' || $remove === 'true' || $remove === true) {
+            $this->merge(['removeImage' => true]);
+        }
+
         $default = (string) config('marine.default_locale');
         if (! $this->has('translations') && $this->has('title')) {
             $this->merge([
@@ -48,6 +61,8 @@ class UpdateServiceRequest extends FormRequest
             'iconKey' => ['sometimes', 'string', 'max:64'],
             'sortOrder' => ['sometimes', 'integer', 'min:0', 'max:999999'],
             'translations' => ['sometimes', 'array'],
+            'image' => ['sometimes', 'nullable', 'file', 'image', 'max:20480'],
+            'removeImage' => ['sometimes', 'boolean'],
         ];
 
         foreach ($locales as $loc) {

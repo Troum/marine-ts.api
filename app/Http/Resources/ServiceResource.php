@@ -8,6 +8,8 @@ use App\Models\ServiceTranslation;
 use App\Support\ApiTranslationPayload;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 /**
  * @mixin Service
@@ -25,6 +27,14 @@ class ServiceResource extends JsonResource
         /** @var ServiceTranslation|null $t */
         $t = $service->translationForLocale($locale);
 
+        $imagePath = $this->image_path;
+        $imageUrl = null;
+        if (is_string($imagePath) && $imagePath !== '') {
+            $imageUrl = str_starts_with($imagePath, 'http')
+                ? $imagePath
+                : URL::to(Storage::disk('public')->url($imagePath));
+        }
+
         $data = [
             'id' => $this->id,
             'title' => $t?->title,
@@ -32,6 +42,7 @@ class ServiceResource extends JsonResource
             'features' => $t?->features ?? [],
             'iconKey' => $this->icon_key,
             'sortOrder' => $this->sort_order,
+            'imageUrl' => $imageUrl,
             'seoTitle' => $t?->seo_title,
             'seoDescription' => $t?->seo_description,
             'seoKeywords' => $t?->seo_keywords,

@@ -3,14 +3,31 @@
 /**
  * Дефолтное меню шапки (до сохранения в site_settings).
  *
- * @var array{main: list<array{path: string, label: array{ru: string, en: string}}>, more: list<array{path: string, label: array{ru: string, en: string}}>}
+ * Пункт с `children` — выпадающее подменю. `path` = `#` — только кнопка без собственной страницы.
+ *
+ * @var array{main: list<array<string, mixed>>, more: list<array<string, mixed>>}
  */
 return [
     'main' => [
         ['path' => '/', 'label' => ['ru' => 'Главная', 'en' => 'Home']],
         ['path' => '/about', 'label' => ['ru' => 'О компании', 'en' => 'About']],
-        ['path' => '/services', 'label' => ['ru' => 'Услуги', 'en' => 'Services']],
-        ['path' => '/vacancies', 'label' => ['ru' => 'Вакансии', 'en' => 'Careers']],
+        [
+            'path' => '/services',
+            'label' => ['ru' => 'Сервис', 'en' => 'Service'],
+            'children' => [
+                ['path' => '/ship-repair', 'label' => ['ru' => 'Судоремонт', 'en' => 'Ship repair']],
+                ['path' => '/spare-parts', 'label' => ['ru' => 'Запчасти', 'en' => 'Spare parts']],
+            ],
+        ],
+        [
+            'path' => '#',
+            'label' => ['ru' => 'Менеджмент', 'en' => 'Management'],
+            'children' => [
+                ['path' => '/ship-management', 'label' => ['ru' => 'Судовой менеджмент', 'en' => 'Ship management']],
+                ['path' => '/crewing-management', 'label' => ['ru' => 'Крюинг', 'en' => 'Crewing']],
+            ],
+        ],
+        ['path' => '/vacancies', 'label' => ['ru' => 'Вакансии', 'en' => 'Vacancies']],
         ['path' => '/contacts', 'label' => ['ru' => 'Контакты', 'en' => 'Contacts']],
     ],
     'more' => [

@@ -7,6 +7,7 @@ use App\DTO\ApplicationForm\StoreApplicationFormDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ApplicationForm\RequestDocumentsRequest;
 use App\Http\Requests\ApplicationForm\StoreApplicationFormRequest;
+use App\Http\Requests\ApplicationForm\StoreOpenApplicationFormRequest;
 use App\Http\Requests\ApplicationForm\UpdateApplicationFormStatusRequest;
 use App\Http\Resources\ApplicationFormCollection;
 use App\Http\Resources\ApplicationFormResource;
@@ -37,6 +38,19 @@ class ApplicationFormController extends Controller
         ]);
 
         $applicationForm = $this->applicationFormService->storeForPublishedVacancy($dto);
+
+        return new ApplicationFormResource($applicationForm->fresh())
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    /**
+     * @throws ReadonlyPropertyUpdateException
+     * @throws DtoHydrationException
+     */
+    public function storeOpen(StoreOpenApplicationFormRequest $request): JsonResponse
+    {
+        $applicationForm = $this->applicationFormService->storeOpenApplication($request->all());
 
         return new ApplicationFormResource($applicationForm->fresh())
             ->response()

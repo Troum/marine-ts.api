@@ -7,13 +7,13 @@ use App\Http\Controllers\Api\ApplicationFormDocumentUploadController;
 use App\Http\Controllers\Api\ApplicationFormSupplementaryDownloadController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContactSettingsController;
-use App\Http\Controllers\Api\NavigationSettingsController;
 use App\Http\Controllers\Api\ContentPageController;
 use App\Http\Controllers\Api\FeedbackController;
 use App\Http\Controllers\Api\GalleryItemController;
 use App\Http\Controllers\Api\MediaUploadController;
-use App\Http\Controllers\Api\PageInquiryController;
+use App\Http\Controllers\Api\NavigationSettingsController;
 use App\Http\Controllers\Api\NewsController;
+use App\Http\Controllers\Api\PageInquiryController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\SiteSeoController;
@@ -42,6 +42,9 @@ Route::get('/stats', StatsController::class);
 Route::post('/feedback', [FeedbackController::class, 'store'])->middleware('throttle:10,1');
 
 Route::post('/page-inquiries', [PageInquiryController::class, 'store'])->middleware('throttle:10,1');
+
+Route::post('/application-forms', [ApplicationFormController::class, 'storeOpen'])
+    ->middleware('throttle:10,1');
 
 Route::post('/vacancies/{slug}/application-forms', [ApplicationFormController::class, 'store'])
     ->where('slug', '[a-z0-9\-]+')

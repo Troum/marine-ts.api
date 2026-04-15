@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable([
     'icon_key',
     'sort_order',
+    'image_path',
 ])]
 class Service extends Model
 {

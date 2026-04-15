@@ -13,6 +13,13 @@ interface ApplicationFormServiceInterface
     public function storeForPublishedVacancy(StoreApplicationFormDto $dto): ApplicationForm;
 
     /**
+     * Анкета без привязки к вакансии (открытая заявка в базу кандидатов).
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    public function storeOpenApplication(array $payload): ApplicationForm;
+
+    /**
      * @param  array<string, mixed>  $filters
      */
     public function paginateForVacancy(Vacancy $vacancy, int $perPage, int $page, array $filters = []): LengthAwarePaginator;

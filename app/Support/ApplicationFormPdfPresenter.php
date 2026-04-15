@@ -13,7 +13,9 @@ final class ApplicationFormPdfPresenter
     {
         $form->loadMissing('vacancy.translations');
         $payload = $form->payload ?? [];
-        $vacancyTitle = $form->vacancy?->translationForLocale((string) config('marine.default_locale'))?->title ?? '—';
+        $vacancyTitle = $form->vacancy_id === null
+            ? 'Открытая заявка (без вакансии)'
+            : ($form->vacancy?->translationForLocale((string) config('marine.default_locale'))?->title ?? '—');
 
         $rows = [
             ['ID анкеты', (string) $form->id],

@@ -44,6 +44,22 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
         ]);
     }
 
+    public function storeOpenApplication(array $payload): ApplicationForm
+    {
+        $payload = $this->camelCasePayloadKeys($payload);
+        $fullName = $this->buildFullName($payload);
+
+        /** @var ApplicationForm */
+        return $this->applicationFormRepository->createOne([
+            'vacancy_id' => null,
+            'status' => ApplicationFormStatus::Pending,
+            'full_name' => $fullName,
+            'email' => (string) ($payload['email'] ?? ''),
+            'phone' => $payload['mobilePhone'] ?? null,
+            'payload' => $payload,
+        ]);
+    }
+
     public function paginateForVacancy(Vacancy $vacancy, int $perPage, int $page, array $filters = []): LengthAwarePaginator
     {
         $defaults = [
@@ -109,7 +125,7 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
     {
         $slug = $applicationForm->vacancy?->slug
             ? Str::slug($applicationForm->vacancy->slug)
-            : 'vacancy';
+            : 'open';
         $filename = 'anketa-'.$applicationForm->id.'-'.$slug.'.pdf';
 
         return Pdf::view('pdf.application-form', ApplicationFormPdfTemplateData::make($applicationForm))

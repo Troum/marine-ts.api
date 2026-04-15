@@ -42,7 +42,8 @@ class ServiceController extends Controller
     public function store(StoreServiceRequest $request)
     {
         $dto = new StoreServiceDto($request->validated());
-        $service = $this->serviceService->create($dto);
+        $image = $request->file('image');
+        $service = $this->serviceService->create($dto, $image);
 
         return (new ServiceResource($service->load(['translations', 'contentPage.translations'])))->response()->setStatusCode(201);
     }
@@ -50,7 +51,8 @@ class ServiceController extends Controller
     public function update(UpdateServiceRequest $request, Service $service): ServiceResource
     {
         $dto = new UpdateServiceDto($request->validated());
-        $service = $this->serviceService->update($service, $dto);
+        $image = $request->file('image');
+        $service = $this->serviceService->update($service, $dto, $image);
 
         return new ServiceResource($service->load(['translations', 'contentPage.translations']));
     }
