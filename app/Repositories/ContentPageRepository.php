@@ -67,6 +67,13 @@ final class ContentPageRepository extends BaseRepository implements ContentPageR
             $query->where('is_published', $filters['published_filter']);
         }
 
+        if (! empty($filters['exclude_slugs']) && is_array($filters['exclude_slugs'])) {
+            $slugs = array_values(array_filter($filters['exclude_slugs'], static fn (mixed $s): bool => is_string($s) && $s !== ''));
+            if ($slugs !== []) {
+                $query->whereNotIn('slug', $slugs);
+            }
+        }
+
         return $query;
     }
 

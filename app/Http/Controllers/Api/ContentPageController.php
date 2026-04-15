@@ -60,6 +60,9 @@ class ContentPageController extends Controller
             $filters['published_filter'] = $published;
         }
 
+        // Главная (`home`) редактируется в /admin/home, в общем списке контентных страниц не показываем.
+        $filters['exclude_slugs'] = ['home'];
+
         return new ContentPageCollection($this->contentPageService->paginateManage($perPage, $page, $filters));
     }
 
