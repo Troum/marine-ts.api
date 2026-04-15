@@ -1,0 +1,19 @@
+# Пример для nginx: глобальный «default-src 'none'» ломает Telescope и /telescope-auth/login
+# (стили/скрипты с api-домена и fonts.bunny.net).
+#
+# Вариант A — отдельные location без жёсткого CSP (предпочтительно):
+#
+#   location ^~ /telescope-auth {
+#       # fastcgi_pass / proxy_pass к Laravel, как у остального API
+#       # сюда НЕ добавлять add_header Content-Security-Policy ... default-src 'none'
+#   }
+#   location ^~ /telescope {
+#       # то же
+#   }
+#
+# Вариант B — модуль headers-more (openresty):
+#   more_clear_headers 'Content-Security-Policy' 'Content-Security-Policy-Report-Only';
+#   внутри location для telescope (после proxy/fastcgi).
+#
+# Вариант C — не задавать CSP на уровне server { } для всего хоста; задавать только там,
+# где нужно, или ослабить default-src до 'self' для API.
