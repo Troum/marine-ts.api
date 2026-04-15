@@ -2,15 +2,13 @@
 
 namespace App\Contracts\Services;
 
+use App\DTO\PageInquiry\StorePageInquiryDto;
 use App\Models\PageInquiry;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface PageInquiryServiceInterface
 {
-    /**
-     * @param  array<string, mixed>  $data
-     */
-    public function store(array $data, ?string $ip): PageInquiry;
+    public function store(StorePageInquiryDto $dto, ?string $ip): PageInquiry;
 
     /**
      * @param  array<string, mixed>  $filters

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\Services\SiteSeoServiceInterface;
+use App\DTO\SiteSeo\UpdateSiteSeoPageDto;
 use App\Models\SiteSeoPage;
 use App\Models\SiteSeoPageTranslation;
 use App\Support\AdminListQuery;
@@ -61,14 +62,14 @@ final class SiteSeoService implements SiteSeoServiceInterface
         return SiteSeoPage::query()->where('slug', $slug)->with('translations')->firstOrFail();
     }
 
-    public function updateSeo(string $slug, array $validated): SiteSeoPage
+    public function updateSeo(string $slug, UpdateSiteSeoPageDto $dto): SiteSeoPage
     {
         /** @var SiteSeoPage $page */
         $page = SiteSeoPage::query()->where('slug', $slug)->firstOrFail();
 
-        if (isset($validated['translations']) && is_array($validated['translations'])) {
-            DB::transaction(function () use ($page, $validated): void {
-                foreach ($validated['translations'] as $locale => $row) {
+        if ($dto->translations !== null) {
+            DB::transaction(function () use ($page, $dto): void {
+                foreach ($dto->translations as $locale => $row) {
                     if (! is_array($row) || ! MarineLocale::isSupported((string) $locale)) {
                         continue;
                     }

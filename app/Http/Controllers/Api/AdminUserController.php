@@ -14,9 +14,10 @@ use App\Http\Requests\AdminUser\StoreAdminUserRequest;
 use App\Http\Requests\AdminUser\UpdateAdminUserRequest;
 use App\Http\Resources\AdminUserCollection;
 use App\Http\Resources\AdminUserResource;
+use App\Http\Resources\RoleCatalogEntryResource;
 use App\Models\User;
 use App\Support\AdminListQuery;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Mycro\Core\Exceptions\DtoHydrationException;
 use Mycro\Core\Exceptions\ReadonlyPropertyUpdateException;
 
@@ -39,9 +40,9 @@ class AdminUserController extends Controller
         return new AdminUserCollection($this->adminUserService->paginate($perPage, $page, $filters));
     }
 
-    public function rolesCatalog(RolesCatalogRequest $request): JsonResponse
+    public function rolesCatalog(RolesCatalogRequest $request): AnonymousResourceCollection
     {
-        return response()->json(['data' => $this->adminUserService->rolesCatalog()]);
+        return RoleCatalogEntryResource::collection($this->adminUserService->rolesCatalog());
     }
 
     public function show(ShowAdminUserRequest $request, User $user): AdminUserResource

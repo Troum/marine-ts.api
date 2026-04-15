@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Contracts\Services\SiteSeoServiceInterface;
+use App\DTO\SiteSeo\UpdateSiteSeoPageDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SiteSeo\UpdateSiteSeoPageRequest;
 use App\Http\Resources\SiteSeoPageResource;
@@ -33,6 +34,6 @@ class SiteSeoController extends Controller
 
     public function update(UpdateSiteSeoPageRequest $request, string $slug): SiteSeoPageResource
     {
-        return new SiteSeoPageResource($this->siteSeoService->updateSeo($slug, $request->validated()));
+        return new SiteSeoPageResource($this->siteSeoService->updateSeo($slug, new UpdateSiteSeoPageDto($request->validated())));
     }
 }

@@ -2,29 +2,24 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Contracts\Services\MediaUploadServiceInterface;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Media\StoreMediaUploadRequest;
+use App\Http\Resources\MediaUploadedResource;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class MediaUploadController extends Controller
 {
-    public function store(Request $request): JsonResponse
+    public function __construct(
+        private readonly MediaUploadServiceInterface $mediaUploadService,
+    ) {}
+
+    public function store(StoreMediaUploadRequest $request): JsonResponse
     {
-        $request->validate([
-            'file' => ['required', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png,webp'],
-        ]);
+        $url = $this->mediaUploadService->storePublic($request->file('file'));
 
-        $file = $request->file('file');
-        $ext = $file->getClientOriginalExtension();
-        $name = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
-        $filename = $name . '-' . Str::random(8) . '.' . $ext;
-
-        $path = $file->storeAs('media', $filename, 'public');
-
-        return response()->json([
-            'url' => Storage::disk('public')->url($path),
-        ], 201);
+        return (new MediaUploadedResource(['url' => $url]))
+            ->response()
+            ->setStatusCode(201);
     }
 }

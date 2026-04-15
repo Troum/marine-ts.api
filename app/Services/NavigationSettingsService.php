@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTO\Navigation\UpdateNavigationSettingsDto;
 use App\Models\SiteSetting;
 
 class NavigationSettingsService
@@ -22,12 +23,14 @@ class NavigationSettingsService
     }
 
     /**
-     * @param  array{main?: mixed, more?: mixed}  $data
      * @return array{main: list<array<string, mixed>>, more: list<array<string, mixed>>}
      */
-    public function updateNavigation(array $data): array
+    public function updateNavigation(UpdateNavigationSettingsDto $dto): array
     {
-        $normalized = $this->normalize($data);
+        $normalized = $this->normalize([
+            'main' => $dto->main,
+            'more' => $dto->more,
+        ]);
         SiteSetting::query()->updateOrCreate(
             ['key' => self::KEY],
             ['value' => $normalized],
@@ -59,7 +62,6 @@ class NavigationSettingsService
     }
 
     /**
-     * @param  mixed  $row
      * @return array<string, mixed>
      */
     private function normalizeItem(mixed $row, bool $allowChildren = true): array
@@ -114,7 +116,9 @@ class NavigationSettingsService
      */
     public function defaultNavigation(): array
     {
-        /** @var array{main: list<array<string, mixed>>, more: list<array<string, mixed>>} */
-        return config('navigations');
+        return [
+            'main' => [],
+            'more' => [],
+        ];
     }
 }

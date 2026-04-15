@@ -3,20 +3,21 @@
 namespace App\Services;
 
 use App\Contracts\Services\AnalyticsServiceInterface;
+use App\DTO\Analytics\RecordPageViewDto;
 use App\Models\PageView;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 final class AnalyticsService implements AnalyticsServiceInterface
 {
-    public function recordPageView(string $path, ?string $title, ?string $referrer, ?string $ip): void
+    public function recordPageView(RecordPageViewDto $dto, ?string $ip): void
     {
         $ipHash = hash('sha256', ($ip ?? '').config('app.key'));
 
         PageView::query()->create([
-            'path' => Str::limit($path, 2048, ''),
-            'title' => $title !== null && $title !== '' ? Str::limit($title, 512, '') : null,
-            'referrer' => $referrer !== null && $referrer !== '' ? Str::limit($referrer, 2048, '') : null,
+            'path' => Str::limit($dto->path, 2048, ''),
+            'title' => $dto->title !== null && $dto->title !== '' ? Str::limit($dto->title, 512, '') : null,
+            'referrer' => $dto->referrer !== null && $dto->referrer !== '' ? Str::limit($dto->referrer, 2048, '') : null,
             'ip_hash' => $ipHash,
             'created_at' => now(),
         ]);

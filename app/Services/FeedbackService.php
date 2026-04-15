@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\Services\FeedbackServiceInterface;
+use App\DTO\Feedback\StoreFeedbackDto;
 use App\Mail\FeedbackReplyMail;
 use App\Models\FeedbackMessage;
 use App\Models\User;
@@ -14,14 +15,14 @@ use Illuminate\Support\Facades\Storage;
 
 final class FeedbackService implements FeedbackServiceInterface
 {
-    public function store(array $data, ?string $ip): FeedbackMessage
+    public function store(StoreFeedbackDto $dto, ?string $ip): FeedbackMessage
     {
         /** @var FeedbackMessage */
         return FeedbackMessage::query()->create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'phone' => $data['phone'] ?? null,
-            'message' => $data['message'],
+            'name' => $dto->name,
+            'email' => $dto->email,
+            'phone' => $dto->phone,
+            'message' => $dto->message,
             'ip' => $ip,
         ]);
     }

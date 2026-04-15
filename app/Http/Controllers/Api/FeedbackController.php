@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Contracts\Services\FeedbackServiceInterface;
+use App\DTO\Feedback\StoreFeedbackDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Feedback\DestroyFeedbackRequest;
 use App\Http\Requests\Feedback\ReplyFeedbackRequest;
@@ -22,7 +23,7 @@ class FeedbackController extends Controller
 
     public function store(StoreFeedbackRequest $request): FeedbackResource
     {
-        $message = $this->feedbackService->store($request->validated(), $request->ip());
+        $message = $this->feedbackService->store(new StoreFeedbackDto($request->validated()), $request->ip());
 
         return new FeedbackResource($message);
     }

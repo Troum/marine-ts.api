@@ -2,6 +2,7 @@
 
 namespace App\Contracts\Services;
 
+use App\DTO\Feedback\StoreFeedbackDto;
 use App\Models\FeedbackMessage;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -9,10 +10,7 @@ use Illuminate\Http\UploadedFile;
 
 interface FeedbackServiceInterface
 {
-    /**
-     * @param  array{name: string, email: string, phone?: string|null, message: string}  $data
-     */
-    public function store(array $data, ?string $ip): FeedbackMessage;
+    public function store(StoreFeedbackDto $dto, ?string $ip): FeedbackMessage;
 
     /**
      * @param  array<string, mixed>  $filters

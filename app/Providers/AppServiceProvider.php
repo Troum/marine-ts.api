@@ -18,6 +18,7 @@ use App\Contracts\Services\AuthServiceInterface;
 use App\Contracts\Services\ContentPageServiceInterface;
 use App\Contracts\Services\FeedbackServiceInterface;
 use App\Contracts\Services\GalleryItemServiceInterface;
+use App\Contracts\Services\MediaUploadServiceInterface;
 use App\Contracts\Services\NewsServiceInterface;
 use App\Contracts\Services\PageInquiryServiceInterface;
 use App\Contracts\Services\ProjectServiceInterface;
@@ -80,6 +81,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ContentPageServiceInterface::class, ContentPageService::class);
         $this->app->bind(AnalyticsServiceInterface::class, AnalyticsService::class);
         $this->app->bind(GalleryItemServiceInterface::class, GalleryItemService::class);
+        $this->app->bind(MediaUploadServiceInterface::class, MediaUploadService::class);
     }
 
     public function boot(): void

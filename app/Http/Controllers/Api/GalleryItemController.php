@@ -74,6 +74,6 @@ class GalleryItemController extends Controller
     {
         $this->galleryItemService->delete($gallery_item);
 
-        return response()->json(['ok' => true]);
+        return response()->json(null, 204);
     }
 }

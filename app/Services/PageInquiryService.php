@@ -3,27 +3,25 @@
 namespace App\Services;
 
 use App\Contracts\Services\PageInquiryServiceInterface;
+use App\DTO\PageInquiry\StorePageInquiryDto;
 use App\Models\PageInquiry;
 use App\Support\AdminListQuery;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class PageInquiryService implements PageInquiryServiceInterface
 {
-    /**
-     * @param  array<string, mixed>  $data
-     */
-    public function store(array $data, ?string $ip): PageInquiry
+    public function store(StorePageInquiryDto $dto, ?string $ip): PageInquiry
     {
         /** @var PageInquiry */
         return PageInquiry::query()->create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'phone' => $data['phone'] ?? null,
-            'company' => $data['company'] ?? null,
-            'vessel_name' => $data['vessel_name'] ?? null,
-            'imo' => $data['imo'] ?? null,
-            'message' => $data['message'],
-            'source_page' => $data['source_page'],
+            'name' => $dto->name,
+            'email' => $dto->email,
+            'phone' => $dto->phone,
+            'company' => $dto->company,
+            'vessel_name' => $dto->vessel_name,
+            'imo' => $dto->imo,
+            'message' => $dto->message,
+            'source_page' => $dto->source_page,
             'ip' => $ip,
         ]);
     }

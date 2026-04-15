@@ -6,6 +6,7 @@ use App\Contracts\Repositories\ApplicationFormRepositoryInterface;
 use App\Contracts\Services\ApplicationFormServiceInterface;
 use App\Contracts\Services\VacancyServiceInterface;
 use App\DTO\ApplicationForm\StoreApplicationFormDto;
+use App\DTO\ApplicationForm\StoreOpenApplicationFormDto;
 use App\Enums\ApplicationFormStatus;
 use App\Mail\DocumentsRequestedMail;
 use App\Models\ApplicationForm;
@@ -44,9 +45,9 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
         ]);
     }
 
-    public function storeOpenApplication(array $payload): ApplicationForm
+    public function storeOpenApplication(StoreOpenApplicationFormDto $dto): ApplicationForm
     {
-        $payload = $this->camelCasePayloadKeys($payload);
+        $payload = $this->camelCasePayloadKeys($dto->toPayloadArray());
         $fullName = $this->buildFullName($payload);
 
         /** @var ApplicationForm */

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTO\Contact\UpdateContactSettingsDto;
 use App\Models\SiteSetting;
 
 class ContactSettingsService
@@ -21,12 +22,12 @@ class ContactSettingsService
         return $this->defaultContacts();
     }
 
-    /**
-     * @param  array{quick?: mixed, offices?: mixed}  $data
-     */
-    public function updateContacts(array $data): array
+    public function updateContacts(UpdateContactSettingsDto $dto): array
     {
-        $normalized = $this->normalize($data);
+        $normalized = $this->normalize([
+            'quick' => $dto->quick,
+            'offices' => $dto->offices,
+        ]);
         SiteSetting::query()->updateOrCreate(
             ['key' => self::KEY],
             ['value' => $normalized],

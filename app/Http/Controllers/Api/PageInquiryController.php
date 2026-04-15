@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Contracts\Services\PageInquiryServiceInterface;
+use App\DTO\PageInquiry\StorePageInquiryDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PageInquiry\DestroyPageInquiryRequest;
 use App\Http\Requests\PageInquiry\StorePageInquiryRequest;
@@ -21,8 +22,7 @@ class PageInquiryController extends Controller
 
     public function store(StorePageInquiryRequest $request): PageInquiryResource
     {
-        $validated = $request->validated();
-        $inquiry = $this->pageInquiryService->store($validated, $request->ip());
+        $inquiry = $this->pageInquiryService->store(new StorePageInquiryDto($request->validated()), $request->ip());
 
         return new PageInquiryResource($inquiry);
     }

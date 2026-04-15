@@ -2,9 +2,11 @@
 
 namespace App\Contracts\Services;
 
+use App\DTO\Analytics\RecordPageViewDto;
+
 interface AnalyticsServiceInterface
 {
-    public function recordPageView(string $path, ?string $title, ?string $referrer, ?string $ip): void;
+    public function recordPageView(RecordPageViewDto $dto, ?string $ip): void;
 
     /**
      * @return array{

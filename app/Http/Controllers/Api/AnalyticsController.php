@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Contracts\Services\AnalyticsServiceInterface;
+use App\DTO\Analytics\RecordPageViewDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Analytics\StorePageViewRequest;
-use Illuminate\Http\JsonResponse;
+use App\Http\Resources\AnalyticsAdminSummaryResource;
 use Illuminate\Http\Response;
 
 class AnalyticsController extends Controller
@@ -16,20 +17,16 @@ class AnalyticsController extends Controller
 
     public function storePageView(StorePageViewRequest $request): Response
     {
-        $validated = $request->validated();
-
         $this->analyticsService->recordPageView(
-            $validated['path'],
-            $validated['title'] ?? null,
-            $validated['referrer'] ?? null,
+            new RecordPageViewDto($request->validated()),
             $request->ip(),
         );
 
         return response()->noContent();
     }
 
-    public function manageSummary(): JsonResponse
+    public function manageSummary(): AnalyticsAdminSummaryResource
     {
-        return response()->json($this->analyticsService->getAdminSummary());
+        return new AnalyticsAdminSummaryResource($this->analyticsService->getAdminSummary());
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Contracts\Services;
 
 use App\DTO\ApplicationForm\StoreApplicationFormDto;
+use App\DTO\ApplicationForm\StoreOpenApplicationFormDto;
 use App\Enums\ApplicationFormStatus;
 use App\Models\ApplicationForm;
 use App\Models\Vacancy;
@@ -14,10 +15,8 @@ interface ApplicationFormServiceInterface
 
     /**
      * Анкета без привязки к вакансии (открытая заявка в базу кандидатов).
-     *
-     * @param  array<string, mixed>  $payload
      */
-    public function storeOpenApplication(array $payload): ApplicationForm;
+    public function storeOpenApplication(StoreOpenApplicationFormDto $dto): ApplicationForm;
 
     /**
      * @param  array<string, mixed>  $filters

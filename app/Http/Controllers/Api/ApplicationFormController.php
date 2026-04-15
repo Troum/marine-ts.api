@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Contracts\Services\ApplicationFormServiceInterface;
 use App\DTO\ApplicationForm\StoreApplicationFormDto;
+use App\DTO\ApplicationForm\StoreOpenApplicationFormDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ApplicationForm\RequestDocumentsRequest;
 use App\Http\Requests\ApplicationForm\StoreApplicationFormRequest;
@@ -11,12 +12,14 @@ use App\Http\Requests\ApplicationForm\StoreOpenApplicationFormRequest;
 use App\Http\Requests\ApplicationForm\UpdateApplicationFormStatusRequest;
 use App\Http\Resources\ApplicationFormCollection;
 use App\Http\Resources\ApplicationFormResource;
+use App\Http\Resources\RequestedDocumentCatalogEntryResource;
 use App\Models\ApplicationForm;
 use App\Models\Vacancy;
 use App\Support\AdminListQuery;
 use App\Support\RequestedDocumentCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Mycro\Core\Exceptions\DtoHydrationException;
 use Mycro\Core\Exceptions\ReadonlyPropertyUpdateException;
 
@@ -50,7 +53,9 @@ class ApplicationFormController extends Controller
      */
     public function storeOpen(StoreOpenApplicationFormRequest $request): JsonResponse
     {
-        $applicationForm = $this->applicationFormService->storeOpenApplication($request->all());
+        $applicationForm = $this->applicationFormService->storeOpenApplication(
+            new StoreOpenApplicationFormDto($request->validated()),
+        );
 
         return new ApplicationFormResource($applicationForm->fresh())
             ->response()
@@ -126,13 +131,11 @@ class ApplicationFormController extends Controller
         return new ApplicationFormResource($applicationForm->load('vacancy.translations'));
     }
 
-    public function documentRequestCatalog(): JsonResponse
+    public function documentRequestCatalog(): AnonymousResourceCollection
     {
         $this->authorize('viewAny', ApplicationForm::class);
 
-        return response()->json([
-            'data' => RequestedDocumentCatalog::entries(),
-        ]);
+        return RequestedDocumentCatalogEntryResource::collection(RequestedDocumentCatalog::entries());
     }
 
     public function requestDocuments(

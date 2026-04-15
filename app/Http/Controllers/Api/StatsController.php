@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Contracts\Services\StatsServiceInterface;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\StatsAggregatesResource;
 
 class StatsController extends Controller
 {
@@ -11,8 +12,8 @@ class StatsController extends Controller
         private readonly StatsServiceInterface $statsService,
     ) {}
 
-    public function __invoke()
+    public function __invoke(): StatsAggregatesResource
     {
-        return response()->json($this->statsService->getAggregates());
+        return new StatsAggregatesResource($this->statsService->getAggregates());
     }
 }

@@ -18,7 +18,7 @@ class UpdateNavigationSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'main' => ['required', 'array', 'min:1', 'max:20'],
+            'main' => ['required', 'array', 'min:0', 'max:20'],
             'main.*.path' => ['required', 'string', 'max:500'],
             'main.*.label' => ['required', 'array'],
             'main.*.label.ru' => ['required', 'string', 'max:120'],

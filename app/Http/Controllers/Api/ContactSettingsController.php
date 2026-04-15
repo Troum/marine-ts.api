@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\DTO\Contact\UpdateContactSettingsDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateContactSettingsRequest;
+use App\Http\Resources\ContactSettingsResource;
 use App\Services\ContactSettingsService;
-use Illuminate\Http\JsonResponse;
 
 class ContactSettingsController extends Controller
 {
@@ -13,19 +14,15 @@ class ContactSettingsController extends Controller
         private readonly ContactSettingsService $contactSettingsService,
     ) {}
 
-    public function show(): JsonResponse
+    public function show(): ContactSettingsResource
     {
-        return response()->json([
-            'data' => $this->contactSettingsService->getContacts(),
-        ]);
+        return new ContactSettingsResource($this->contactSettingsService->getContacts());
     }
 
-    public function update(UpdateContactSettingsRequest $request): JsonResponse
+    public function update(UpdateContactSettingsRequest $request): ContactSettingsResource
     {
-        $data = $this->contactSettingsService->updateContacts($request->validated());
+        $data = $this->contactSettingsService->updateContacts(new UpdateContactSettingsDto($request->validated()));
 
-        return response()->json([
-            'data' => $data,
-        ]);
+        return new ContactSettingsResource($data);
     }
 }

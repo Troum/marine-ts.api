@@ -18,6 +18,7 @@ use App\Models\ContentPage;
 use App\Support\AdminListQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use InvalidArgumentException;
 use Mycro\Core\Exceptions\DtoHydrationException;
 use Mycro\Core\Exceptions\ReadonlyPropertyUpdateException;
@@ -28,13 +29,11 @@ class ContentPageController extends Controller
         private readonly ContentPageServiceInterface $contentPageService,
     ) {}
 
-    public function publicIndex(Request $request): JsonResponse
+    public function publicIndex(Request $request): AnonymousResourceCollection
     {
         $pages = $this->contentPageService->listPublishedForPublic();
 
-        return response()->json([
-            'data' => ContentPageSummaryResource::collection($pages)->resolve(),
-        ]);
+        return ContentPageSummaryResource::collection($pages);
     }
 
     public function publicShow(string $slug): ContentPageResource|JsonResponse
