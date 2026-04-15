@@ -3,9 +3,9 @@
 use App\Http\Controllers\TelescopeAuthController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    abort(403);
-});
+//Route::get('/', function () {
+//    abort(403);
+//});
 
 Route::middleware(['throttle:12,1'])->group(function (): void {
     Route::get('/telescope-auth/login', [TelescopeAuthController::class, 'create'])
