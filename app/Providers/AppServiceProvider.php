@@ -17,9 +17,9 @@ use App\Contracts\Services\ApplicationFormSupplementaryDocumentServiceInterface;
 use App\Contracts\Services\AuthServiceInterface;
 use App\Contracts\Services\ContentPageServiceInterface;
 use App\Contracts\Services\FeedbackServiceInterface;
-use App\Contracts\Services\PageInquiryServiceInterface;
 use App\Contracts\Services\GalleryItemServiceInterface;
 use App\Contracts\Services\NewsServiceInterface;
+use App\Contracts\Services\PageInquiryServiceInterface;
 use App\Contracts\Services\ProjectServiceInterface;
 use App\Contracts\Services\ServiceServiceInterface;
 use App\Contracts\Services\SiteSeoServiceInterface;
@@ -41,15 +41,16 @@ use App\Services\ApplicationFormSupplementaryDocumentService;
 use App\Services\AuthService;
 use App\Services\ContentPageService;
 use App\Services\FeedbackService;
-use App\Services\PageInquiryService;
 use App\Services\GalleryItemService;
 use App\Services\NewsService;
+use App\Services\PageInquiryService;
 use App\Services\ProjectService;
 use App\Services\ServiceService;
 use App\Services\SiteSeoService;
 use App\Services\StatsService;
 use App\Services\VacancyService;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -84,6 +85,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        View::prependNamespace('telescope', resource_path('views/vendor/telescope'));
+
         Gate::before(function ($user, string $ability) {
             if ($user instanceof User && $user->hasRole('admin')) {
                 return true;
