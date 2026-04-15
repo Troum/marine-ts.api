@@ -16,7 +16,10 @@ class StripContentSecurityPolicyForTelescope
     {
         $response = $next($request);
 
-        if ($request->is('telescope') || $request->is('telescope/*')) {
+        $path = $request->path();
+
+        // telescope/* и telescope-auth/* (оба начинаются с «telescope…»)
+        if (str_starts_with($path, 'telescope')) {
             $response->headers->remove('Content-Security-Policy');
             $response->headers->remove('Content-Security-Policy-Report-Only');
         }
