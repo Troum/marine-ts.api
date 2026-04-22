@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\DTO\Navigation\UpdateNavigationSettingsDto;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\UpdateNavigationSettingsRequest;
+use App\Http\Requests\Contacts\UpdateNavigationSettingsRequest;
 use App\Http\Resources\NavigationSettingsResource;
 use App\Services\NavigationSettingsService;
 

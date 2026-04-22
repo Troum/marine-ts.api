@@ -7,13 +7,12 @@ use App\DTO\News\StoreNewsDto;
 use App\DTO\News\UpdateNewsDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\News\DestroyNewsRequest;
+use App\Http\Requests\News\IndexNewsRequest;
 use App\Http\Requests\News\StoreNewsRequest;
 use App\Http\Requests\News\UpdateNewsRequest;
 use App\Http\Resources\NewsCollection;
 use App\Http\Resources\NewsResource;
 use App\Models\News;
-use App\Support\AdminListQuery;
-use Illuminate\Http\Request;
 
 class NewsController extends Controller
 {
@@ -21,17 +20,11 @@ class NewsController extends Controller
         private readonly NewsServiceInterface $newsService,
     ) {}
 
-    public function index(Request $request): NewsCollection
+    public function index(IndexNewsRequest $request): NewsCollection
     {
-        $perPage = min(max((int) $request->query('per_page', 100), 1), 500);
-        $page = max(1, (int) $request->query('page', 1));
+        $dto = $request->toPaginatedTableDto();
 
-        $filters = array_merge(
-            AdminListQuery::sortOrder($request, ['id', 'title', 'date', 'category', 'author', 'slug'], 'id'),
-            array_filter(['search' => AdminListQuery::search($request)])
-        );
-
-        return new NewsCollection($this->newsService->paginate($perPage, $page, $filters));
+        return new NewsCollection($this->newsService->paginate($dto->perPage, $dto->page, $dto->filters));
     }
 
     public function show(News $news): NewsResource

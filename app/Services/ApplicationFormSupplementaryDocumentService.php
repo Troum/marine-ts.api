@@ -120,8 +120,7 @@ final class ApplicationFormSupplementaryDocumentService implements ApplicationFo
 
         if ($uploadedKeys !== []) {
             $payload['supplementaryFiles'] = $sup;
-            $form->payload = $payload;
-            $form->save();
+            $this->applicationFormRepository->updateOne($form, ['payload' => $payload]);
         }
 
         if ($uploadedKeys === []) {

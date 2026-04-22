@@ -2,21 +2,25 @@
 
 namespace App\Services;
 
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
 use App\DTO\Contact\UpdateContactSettingsDto;
-use App\Models\SiteSetting;
 
 class ContactSettingsService
 {
     public const KEY = 'contacts';
+
+    public function __construct(
+        private readonly SiteSettingRepositoryInterface $siteSettingRepository,
+    ) {}
 
     /**
      * @return array{quick: list<array{iconKey: string, label: string, value: string, href: string|null}>, offices: list<array{city: string, country: string, address: string, phone: string, email: string}>}
      */
     public function getContacts(): array
     {
-        $row = SiteSetting::query()->where('key', self::KEY)->first();
-        if ($row !== null && is_array($row->value)) {
-            return $this->normalize($row->value);
+        $value = $this->siteSettingRepository->getValueByKey(self::KEY);
+        if ($value !== null) {
+            return $this->normalize($value);
         }
 
         return $this->defaultContacts();
@@ -28,10 +32,7 @@ class ContactSettingsService
             'quick' => $dto->quick,
             'offices' => $dto->offices,
         ]);
-        SiteSetting::query()->updateOrCreate(
-            ['key' => self::KEY],
-            ['value' => $normalized],
-        );
+        $this->siteSettingRepository->updateOrCreateValue(self::KEY, $normalized);
 
         return $normalized;
     }

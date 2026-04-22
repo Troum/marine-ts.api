@@ -8,16 +8,16 @@ use App\DTO\ContentPage\UpdateContentPageDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ContentPage\DestroyContentPageRequest;
 use App\Http\Requests\ContentPage\IndexContentPagesRequest;
+use App\Http\Requests\ContentPage\PublicContentPageIndexRequest;
 use App\Http\Requests\ContentPage\ShowContentPageManageRequest;
 use App\Http\Requests\ContentPage\StoreContentPageRequest;
 use App\Http\Requests\ContentPage\UpdateContentPageRequest;
+use App\Http\Resources\ApiMessageResource;
 use App\Http\Resources\ContentPageCollection;
 use App\Http\Resources\ContentPageResource;
 use App\Http\Resources\ContentPageSummaryResource;
 use App\Models\ContentPage;
-use App\Support\AdminListQuery;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use InvalidArgumentException;
 use Mycro\Core\Exceptions\DtoHydrationException;
@@ -29,7 +29,7 @@ class ContentPageController extends Controller
         private readonly ContentPageServiceInterface $contentPageService,
     ) {}
 
-    public function publicIndex(Request $request): AnonymousResourceCollection
+    public function publicIndex(PublicContentPageIndexRequest $request): AnonymousResourceCollection
     {
         $pages = $this->contentPageService->listPublishedForPublic();
 
@@ -40,7 +40,7 @@ class ContentPageController extends Controller
     {
         $page = $this->contentPageService->findPublishedBySlug($slug);
         if ($page === null) {
-            return response()->json(['message' => 'Страница не найдена'], 404);
+            return (new ApiMessageResource(['message' => 'Страница не найдена']))->response()->setStatusCode(404);
         }
 
         return new ContentPageResource($page->load(['contentable.translations', 'translations']));
@@ -48,22 +48,9 @@ class ContentPageController extends Controller
 
     public function manageIndex(IndexContentPagesRequest $request): ContentPageCollection
     {
-        $perPage = min(max((int) $request->query('per_page', 100), 1), 500);
-        $page = max(1, (int) $request->query('page', 1));
+        $dto = $request->toPaginatedTableDto();
 
-        $published = AdminListQuery::publishedTriState($request);
-        $filters = array_merge(
-            AdminListQuery::sortOrder($request, ['id', 'slug', 'title', 'sort_order', 'created_at', 'updated_at'], 'sort_order', 'asc'),
-            array_filter(['search' => AdminListQuery::search($request)])
-        );
-        if ($published !== null) {
-            $filters['published_filter'] = $published;
-        }
-
-        // Главная (`home`) редактируется в /admin/home, в общем списке контентных страниц не показываем.
-        $filters['exclude_slugs'] = ['home'];
-
-        return new ContentPageCollection($this->contentPageService->paginateManage($perPage, $page, $filters));
+        return new ContentPageCollection($this->contentPageService->paginateManage($dto->perPage, $dto->page, $dto->filters));
     }
 
     public function showManage(ShowContentPageManageRequest $request, ContentPage $contentPage): ContentPageResource

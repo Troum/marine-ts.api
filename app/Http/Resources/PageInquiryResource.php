@@ -20,11 +20,15 @@ class PageInquiryResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'email' => $this->email,
-            'phone' => $this->phone,
             'company' => $this->company,
-            'vesselName' => $this->vessel_name,
-            'imo' => $this->imo,
+            'position' => $this->position,
+            'phone' => $this->phone,
+            'email' => $this->email,
+            'vesselTypes' => self::asStringList($this->vessel_types),
+            'vesselsCount' => $this->vessels_count,
+            'vesselFlag' => $this->vessel_flag,
+            'mainPorts' => $this->main_ports,
+            'requiredServices' => self::asStringList($this->required_services),
             'message' => $this->message,
             'sourcePage' => $this->source_page,
             'ip' => $this->ip,
@@ -32,6 +36,25 @@ class PageInquiryResource extends JsonResource
             'createdAt' => self::toIso8601($this->created_at),
             'updatedAt' => self::toIso8601($this->updated_at),
         ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function asStringList(mixed $value): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($value as $item) {
+            if (is_string($item) && $item !== '') {
+                $out[] = $item;
+            }
+        }
+
+        return array_values($out);
     }
 
     private static function toIso8601(mixed $value): ?string

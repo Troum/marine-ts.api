@@ -46,8 +46,21 @@ final class UserRepository extends BaseRepository implements UserRepositoryInter
         return $query;
     }
 
-    public function findByUsername(string $username): ?User
+    public function findByUsernameForAuth(string $username): ?User
     {
-        return $this->model->newQuery()->where('username', $username)->first();
+        return $this->model->newQuery()
+            ->where('username', $username)
+            ->with(['roles', 'permissions'])
+            ->first();
+    }
+
+    public function revokeAllApiTokens(User $user): void
+    {
+        $user->tokens()->delete();
+    }
+
+    public function createApiToken(User $user, string $name): string
+    {
+        return $user->createToken($name)->plainTextToken;
     }
 }

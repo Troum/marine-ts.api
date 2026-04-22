@@ -6,6 +6,8 @@ use App\Contracts\Repositories\NewsRepositoryInterface;
 use App\Models\News;
 use App\Models\NewsTranslation;
 use App\Support\AdminListQuery;
+use App\Support\MarineLocale;
+use App\Support\NormalizeTranslationInput;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -70,5 +72,36 @@ final class NewsRepository extends BaseRepository implements NewsRepositoryInter
     public function countFeatured(): int
     {
         return $this->model->newQuery()->where('featured', true)->count();
+    }
+
+    public function findBySlugWithTranslations(string $slug): News
+    {
+        /** @var News */
+        return $this->model->newQuery()->where('slug', $slug)->with('translations')->firstOrFail();
+    }
+
+    /**
+     * @param  array<string, array<string, mixed>>  $translations
+     */
+    public function syncNewsTranslations(News $news, array $translations): void
+    {
+        foreach (config('marine.locales') as $locale) {
+            if (! isset($translations[$locale])) {
+                continue;
+            }
+            if (! MarineLocale::isSupported((string) $locale)) {
+                continue;
+            }
+            $row = NormalizeTranslationInput::newsLocaleRow($translations[$locale]);
+            $news->translations()->updateOrCreate(
+                ['locale' => $locale],
+                $row
+            );
+        }
+    }
+
+    public function uniqueSlugForTitle(string $title): string
+    {
+        return News::ensureUniqueSlug(News::slugFromTitle($title));
     }
 }

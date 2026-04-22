@@ -15,6 +15,9 @@ class DatabaseSeeder extends Seeder
             VacanciesSeeder::class,
             MarineDataSeeder::class,
             SiteSettingsContactSeeder::class,
+            // Точечно перезаписывает geography.locations на странице "О компании",
+            // не трогая остальной контент. Если страница ещё не создана — пропускает.
+            AboutPageLocationsSeeder::class,
         ]);
     }
 }

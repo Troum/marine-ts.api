@@ -2,4 +2,12 @@
 
 namespace App\Contracts\Repositories;
 
-interface ServiceRepositoryInterface extends BaseRepositoryInterface {}
+use App\Models\Service;
+
+interface ServiceRepositoryInterface extends BaseRepositoryInterface
+{
+    /**
+     * @param  array<string, array<string, mixed>>  $translations
+     */
+    public function syncServiceTranslations(Service $service, array $translations): void;
+}

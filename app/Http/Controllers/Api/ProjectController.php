@@ -7,14 +7,13 @@ use App\DTO\Project\StoreProjectDto;
 use App\DTO\Project\UpdateProjectDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Project\DestroyProjectRequest;
+use App\Http\Requests\Project\IndexProjectRequest;
 use App\Http\Requests\Project\StoreProjectRequest;
 use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Http\Resources\ProjectCollection;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
-use App\Support\AdminListQuery;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Mycro\Core\Exceptions\DtoHydrationException;
 use Mycro\Core\Exceptions\ReadonlyPropertyUpdateException;
 
@@ -24,17 +23,11 @@ class ProjectController extends Controller
         private readonly ProjectServiceInterface $projectService,
     ) {}
 
-    public function index(Request $request): ProjectCollection
+    public function index(IndexProjectRequest $request): ProjectCollection
     {
-        $perPage = min(max((int) $request->query('per_page', 100), 1), 500);
-        $page = max(1, (int) $request->query('page', 1));
+        $dto = $request->toPaginatedTableDto();
 
-        $filters = array_merge(
-            AdminListQuery::sortOrder($request, ['id', 'title', 'type', 'type_label', 'location', 'date'], 'id'),
-            array_filter(['search' => AdminListQuery::search($request)])
-        );
-
-        return new ProjectCollection($this->projectService->paginate($perPage, $page, $filters));
+        return new ProjectCollection($this->projectService->paginate($dto->perPage, $dto->page, $dto->filters));
     }
 
     public function show(Project $project): ProjectResource

@@ -7,8 +7,6 @@ use App\Contracts\Services\VacancyServiceInterface;
 use App\DTO\Vacancy\StoreVacancyDto;
 use App\DTO\Vacancy\UpdateVacancyDto;
 use App\Models\Vacancy;
-use App\Support\MarineLocale;
-use App\Support\NormalizeTranslationInput;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
@@ -38,12 +36,7 @@ final class VacancyService implements VacancyServiceInterface
 
     public function getBySlug(string $slug): Vacancy
     {
-        /** @var Vacancy */
-        return Vacancy::query()
-            ->where('slug', $slug)
-            ->where('is_published', true)
-            ->with('translations')
-            ->firstOrFail();
+        return $this->vacancyRepository->findPublishedBySlugWithTranslations($slug);
     }
 
     public function create(StoreVacancyDto $dto): Vacancy
@@ -54,8 +47,8 @@ final class VacancyService implements VacancyServiceInterface
         }
 
         $defaultRow = $dto->translations[$default];
-        $slug = $dto->slug ?? Vacancy::ensureUniqueSlug(
-            Vacancy::slugFromTitle(is_array($defaultRow) ? (string) ($defaultRow['title'] ?? '') : ''),
+        $slug = $dto->slug ?? $this->vacancyRepository->uniqueSlugForTitle(
+            is_array($defaultRow) ? (string) ($defaultRow['title'] ?? '') : '',
         );
 
         return DB::transaction(function () use ($dto, $slug): Vacancy {
@@ -66,7 +59,7 @@ final class VacancyService implements VacancyServiceInterface
                 'is_published' => $dto->is_published,
             ], static fn (mixed $v): bool => $v !== null));
 
-            $this->syncVacancyTranslations($vacancy, $dto->translations);
+            $this->vacancyRepository->syncVacancyTranslations($vacancy, $dto->translations);
 
             return $vacancy->load('translations');
         });
@@ -85,7 +78,7 @@ final class VacancyService implements VacancyServiceInterface
 
         if ($dto->translations !== null) {
             DB::transaction(function () use ($vacancy, $dto): void {
-                $this->syncVacancyTranslations($vacancy, $dto->translations);
+                $this->vacancyRepository->syncVacancyTranslations($vacancy, $dto->translations);
             });
         }
 
@@ -95,26 +88,6 @@ final class VacancyService implements VacancyServiceInterface
     public function delete(Vacancy $vacancy, bool $soft = true): void
     {
         $this->vacancyRepository->deleteOne($vacancy, $soft);
-    }
-
-    /**
-     * @param  array<string, array<string, mixed>>  $translations
-     */
-    private function syncVacancyTranslations(Vacancy $vacancy, array $translations): void
-    {
-        foreach (config('marine.locales') as $locale) {
-            if (! isset($translations[$locale])) {
-                continue;
-            }
-            if (! MarineLocale::isSupported((string) $locale)) {
-                continue;
-            }
-            $row = NormalizeTranslationInput::vacancyLocaleRow($translations[$locale]);
-            $vacancy->translations()->updateOrCreate(
-                ['locale' => $locale],
-                $row
-            );
-        }
     }
 
     /**

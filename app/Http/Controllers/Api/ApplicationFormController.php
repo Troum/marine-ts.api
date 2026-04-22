@@ -6,6 +6,8 @@ use App\Contracts\Services\ApplicationFormServiceInterface;
 use App\DTO\ApplicationForm\StoreApplicationFormDto;
 use App\DTO\ApplicationForm\StoreOpenApplicationFormDto;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApplicationForm\IndexApplicationFormsForVacancyRequest;
+use App\Http\Requests\ApplicationForm\IndexApplicationFormsManageRequest;
 use App\Http\Requests\ApplicationForm\RequestDocumentsRequest;
 use App\Http\Requests\ApplicationForm\StoreApplicationFormRequest;
 use App\Http\Requests\ApplicationForm\StoreOpenApplicationFormRequest;
@@ -15,10 +17,8 @@ use App\Http\Resources\ApplicationFormResource;
 use App\Http\Resources\RequestedDocumentCatalogEntryResource;
 use App\Models\ApplicationForm;
 use App\Models\Vacancy;
-use App\Support\AdminListQuery;
 use App\Support\RequestedDocumentCatalog;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Mycro\Core\Exceptions\DtoHydrationException;
 use Mycro\Core\Exceptions\ReadonlyPropertyUpdateException;
@@ -37,7 +37,7 @@ class ApplicationFormController extends Controller
     {
         $dto = new StoreApplicationFormDto([
             'slug' => $slug,
-            'payload' => $request->all(),
+            'payload' => $request->validated(),
         ]);
 
         $applicationForm = $this->applicationFormService->storeForPublishedVacancy($dto);
@@ -62,43 +62,21 @@ class ApplicationFormController extends Controller
             ->setStatusCode(201);
     }
 
-    public function manageIndex(Request $request, Vacancy $vacancy): ApplicationFormCollection
+    public function manageIndex(IndexApplicationFormsForVacancyRequest $request, Vacancy $vacancy): ApplicationFormCollection
     {
-        $this->authorize('viewAny', ApplicationForm::class);
-
-        $perPage = min(max((int) $request->query('per_page', 100), 1), 500);
-        $page = max(1, (int) $request->query('page', 1));
-
-        $filters = array_merge(
-            AdminListQuery::sortOrder($request, ['id', 'created_at', 'updated_at', 'full_name', 'email', 'status'], 'id', 'desc'),
-            array_filter([
-                'search' => AdminListQuery::search($request),
-                'status' => AdminListQuery::statusFilter($request),
-            ])
-        );
+        $dto = $request->toPaginatedTableDto();
 
         return new ApplicationFormCollection(
-            $this->applicationFormService->paginateForVacancy($vacancy, $perPage, $page, $filters)
+            $this->applicationFormService->paginateForVacancy($vacancy, $dto->perPage, $dto->page, $dto->filters)
         );
     }
 
-    public function manageIndexAll(Request $request): ApplicationFormCollection
+    public function manageIndexAll(IndexApplicationFormsManageRequest $request): ApplicationFormCollection
     {
-        $this->authorize('viewAny', ApplicationForm::class);
-
-        $perPage = min(max((int) $request->query('per_page', 50), 1), 500);
-        $page = max(1, (int) $request->query('page', 1));
-
-        $filters = array_merge(
-            AdminListQuery::sortOrder($request, ['id', 'created_at', 'updated_at', 'full_name', 'email', 'status', 'vacancy_id'], 'id', 'desc'),
-            array_filter([
-                'search' => AdminListQuery::search($request),
-                'status' => AdminListQuery::statusFilter($request),
-            ])
-        );
+        $dto = $request->toPaginatedTableDto();
 
         return new ApplicationFormCollection(
-            $this->applicationFormService->paginateAll($perPage, $page, $filters)
+            $this->applicationFormService->paginateAll($dto->perPage, $dto->page, $dto->filters)
         );
     }
 

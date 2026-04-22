@@ -6,14 +6,13 @@ use App\Contracts\Services\FeedbackServiceInterface;
 use App\DTO\Feedback\StoreFeedbackDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Feedback\DestroyFeedbackRequest;
+use App\Http\Requests\Feedback\IndexFeedbackManageRequest;
 use App\Http\Requests\Feedback\ReplyFeedbackRequest;
 use App\Http\Requests\Feedback\StoreFeedbackRequest;
 use App\Http\Resources\FeedbackCollection;
 use App\Http\Resources\FeedbackResource;
 use App\Models\FeedbackMessage;
-use App\Support\AdminListQuery;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class FeedbackController extends Controller
 {
@@ -28,22 +27,11 @@ class FeedbackController extends Controller
         return new FeedbackResource($message);
     }
 
-    public function manageIndex(Request $request): FeedbackCollection
+    public function manageIndex(IndexFeedbackManageRequest $request): FeedbackCollection
     {
-        $this->authorize('viewAny', FeedbackMessage::class);
+        $dto = $request->toPaginatedTableDto();
 
-        $perPage = min(max((int) $request->query('per_page', 500), 1), 500);
-        $page = max(1, (int) $request->query('page', 1));
-
-        $filters = array_merge(
-            AdminListQuery::sortOrder($request, ['id', 'created_at', 'updated_at', 'read_at'], 'id', 'desc'),
-            array_filter([
-                'search' => AdminListQuery::search($request),
-            ])
-        );
-        $filters['read'] = AdminListQuery::readTriState($request);
-
-        return new FeedbackCollection($this->feedbackService->paginateManage($perPage, $page, $filters));
+        return new FeedbackCollection($this->feedbackService->paginateManage($dto->perPage, $dto->page, $dto->filters));
     }
 
     public function show(FeedbackMessage $feedback): FeedbackResource

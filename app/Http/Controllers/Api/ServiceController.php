@@ -7,13 +7,12 @@ use App\DTO\Service\StoreServiceDto;
 use App\DTO\Service\UpdateServiceDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\DestroyServiceRequest;
+use App\Http\Requests\Service\IndexServiceRequest;
 use App\Http\Requests\Service\StoreServiceRequest;
 use App\Http\Requests\Service\UpdateServiceRequest;
 use App\Http\Resources\ServiceCollection;
 use App\Http\Resources\ServiceResource;
 use App\Models\Service;
-use App\Support\AdminListQuery;
-use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
@@ -21,17 +20,11 @@ class ServiceController extends Controller
         private readonly ServiceServiceInterface $serviceService,
     ) {}
 
-    public function index(Request $request): ServiceCollection
+    public function index(IndexServiceRequest $request): ServiceCollection
     {
-        $perPage = min(max((int) $request->query('per_page', 100), 1), 500);
-        $page = max(1, (int) $request->query('page', 1));
+        $dto = $request->toPaginatedTableDto();
 
-        $filters = array_merge(
-            AdminListQuery::sortOrder($request, ['id', 'title', 'sort_order', 'icon_key'], 'sort_order', 'asc'),
-            array_filter(['search' => AdminListQuery::search($request)])
-        );
-
-        return new ServiceCollection($this->serviceService->paginate($perPage, $page, $filters));
+        return new ServiceCollection($this->serviceService->paginate($dto->perPage, $dto->page, $dto->filters));
     }
 
     public function show(Service $service): ServiceResource

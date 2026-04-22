@@ -16,7 +16,6 @@ use App\Http\Resources\AdminUserCollection;
 use App\Http\Resources\AdminUserResource;
 use App\Http\Resources\RoleCatalogEntryResource;
 use App\Models\User;
-use App\Support\AdminListQuery;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Mycro\Core\Exceptions\DtoHydrationException;
 use Mycro\Core\Exceptions\ReadonlyPropertyUpdateException;
@@ -29,15 +28,9 @@ class AdminUserController extends Controller
 
     public function index(IndexAdminUsersRequest $request): AdminUserCollection
     {
-        $perPage = min(max((int) $request->query('per_page', 100), 1), 500);
-        $page = max(1, (int) $request->query('page', 1));
+        $dto = $request->toPaginatedTableDto();
 
-        $filters = array_merge(
-            AdminListQuery::sortOrder($request, ['id', 'name', 'username', 'email', 'created_at'], 'id'),
-            array_filter(['search' => AdminListQuery::search($request)])
-        );
-
-        return new AdminUserCollection($this->adminUserService->paginate($perPage, $page, $filters));
+        return new AdminUserCollection($this->adminUserService->paginate($dto->perPage, $dto->page, $dto->filters));
     }
 
     public function rolesCatalog(RolesCatalogRequest $request): AnonymousResourceCollection

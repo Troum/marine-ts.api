@@ -6,8 +6,11 @@ use App\Contracts\Repositories\ContentPageRepositoryInterface;
 use App\Models\ContentPage;
 use App\Models\ContentPageTranslation;
 use App\Support\AdminListQuery;
+use App\Support\MarineLocale;
+use App\Support\NormalizeTranslationInput;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 final class ContentPageRepository extends BaseRepository implements ContentPageRepositoryInterface
 {
@@ -84,5 +87,50 @@ final class ContentPageRepository extends BaseRepository implements ContentPageR
             ->where('is_published', true)
             ->with('translations')
             ->first();
+    }
+
+    /**
+     * @return Collection<int, ContentPage>
+     */
+    public function listPublishedForPublic(): Collection
+    {
+        return $this->model->newQuery()
+            ->where('is_published', true)
+            ->with('translations')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+    }
+
+    public function detachContentableDuplicates(string $contentableClass, int $contentableId, int $exceptContentPageId): void
+    {
+        $this->model->newQuery()
+            ->where('contentable_type', $contentableClass)
+            ->where('contentable_id', $contentableId)
+            ->where('id', '!=', $exceptContentPageId)
+            ->update([
+                'contentable_type' => null,
+                'contentable_id' => null,
+            ]);
+    }
+
+    /**
+     * @param  array<string, array<string, mixed>>  $translations
+     */
+    public function syncContentPageTranslations(ContentPage $page, array $translations): void
+    {
+        foreach (config('marine.locales') as $locale) {
+            if (! isset($translations[$locale])) {
+                continue;
+            }
+            if (! MarineLocale::isSupported((string) $locale)) {
+                continue;
+            }
+            $row = NormalizeTranslationInput::contentPageLocaleRow($translations[$locale]);
+            $page->translations()->updateOrCreate(
+                ['locale' => $locale],
+                $row
+            );
+        }
     }
 }

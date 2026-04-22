@@ -6,6 +6,8 @@ use App\Contracts\Repositories\VacancyRepositoryInterface;
 use App\Models\Vacancy;
 use App\Models\VacancyTranslation;
 use App\Support\AdminListQuery;
+use App\Support\MarineLocale;
+use App\Support\NormalizeTranslationInput;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -60,6 +62,41 @@ final class VacancyRepository extends BaseRepository implements VacancyRepositor
     public function countPublished(): int
     {
         return $this->model->newQuery()->where('is_published', true)->count();
+    }
+
+    public function findPublishedBySlugWithTranslations(string $slug): Vacancy
+    {
+        /** @var Vacancy */
+        return $this->model->newQuery()
+            ->where('slug', $slug)
+            ->where('is_published', true)
+            ->with('translations')
+            ->firstOrFail();
+    }
+
+    /**
+     * @param  array<string, array<string, mixed>>  $translations
+     */
+    public function syncVacancyTranslations(Vacancy $vacancy, array $translations): void
+    {
+        foreach (config('marine.locales') as $locale) {
+            if (! isset($translations[$locale])) {
+                continue;
+            }
+            if (! MarineLocale::isSupported((string) $locale)) {
+                continue;
+            }
+            $row = NormalizeTranslationInput::vacancyLocaleRow($translations[$locale]);
+            $vacancy->translations()->updateOrCreate(
+                ['locale' => $locale],
+                $row
+            );
+        }
+    }
+
+    public function uniqueSlugForTitle(string $title): string
+    {
+        return Vacancy::ensureUniqueSlug(Vacancy::slugFromTitle($title));
     }
 
     /**

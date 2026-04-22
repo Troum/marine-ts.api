@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\DTO\Contact\UpdateContactSettingsDto;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\UpdateContactSettingsRequest;
+use App\Http\Requests\Contacts\UpdateContactSettingsRequest;
 use App\Http\Resources\ContactSettingsResource;
 use App\Services\ContactSettingsService;
 

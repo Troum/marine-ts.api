@@ -8,11 +8,10 @@ use App\DTO\ContentPage\StoreContentPageDto;
 use App\DTO\ContentPage\UpdateContentPageDto;
 use App\Models\ContentPage;
 use App\Support\ContentableMorph;
-use App\Support\MarineLocale;
-use App\Support\NormalizeTranslationInput;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 final class ContentPageService implements ContentPageServiceInterface
 {
@@ -53,19 +52,14 @@ final class ContentPageService implements ContentPageServiceInterface
 
     public function listPublishedForPublic(): Collection
     {
-        return ContentPage::query()
-            ->where('is_published', true)
-            ->with('translations')
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get();
+        return $this->contentPageRepository->listPublishedForPublic();
     }
 
     public function create(StoreContentPageDto $dto, ?string $contentableShortType = null, ?int $contentableId = null): ContentPage
     {
         $default = (string) config('marine.default_locale');
         if (! isset($dto->translations[$default])) {
-            throw new \InvalidArgumentException("translations.$default is required.");
+            throw new InvalidArgumentException("translations.$default is required.");
         }
 
         return DB::transaction(function () use ($dto, $contentableShortType, $contentableId): ContentPage {
@@ -77,7 +71,7 @@ final class ContentPageService implements ContentPageServiceInterface
                 'show_inquiry_form' => $dto->show_inquiry_form,
             ]);
 
-            $this->syncContentPageTranslations($page, $dto->translations);
+            $this->contentPageRepository->syncContentPageTranslations($page, $dto->translations);
 
             if ($contentableShortType !== null && $contentableId !== null) {
                 $this->syncContentableLink($page->fresh() ?? $page, $contentableShortType, $contentableId);
@@ -103,7 +97,7 @@ final class ContentPageService implements ContentPageServiceInterface
 
         if ($dto->translations !== null) {
             DB::transaction(function () use ($page, $dto): void {
-                $this->syncContentPageTranslations($page, $dto->translations);
+                $this->contentPageRepository->syncContentPageTranslations($page, $dto->translations);
             });
         }
 
@@ -131,7 +125,7 @@ final class ContentPageService implements ContentPageServiceInterface
 
     private function unlinkContentable(ContentPage $page): void
     {
-        $page->update([
+        $this->contentPageRepository->updateOne($page, [
             'contentable_type' => null,
             'contentable_id' => null,
         ]);
@@ -140,39 +134,11 @@ final class ContentPageService implements ContentPageServiceInterface
     private function syncContentableLink(ContentPage $page, string $shortType, int $id): void
     {
         $class = ContentableMorph::classFromShort($shortType);
-        ContentPage::query()
-            ->where('contentable_type', $class)
-            ->where('contentable_id', $id)
-            ->where('id', '!=', $page->id)
-            ->update([
-                'contentable_type' => null,
-                'contentable_id' => null,
-            ]);
-
-        $page->update([
+        $this->contentPageRepository->detachContentableDuplicates($class, $id, $page->id);
+        $this->contentPageRepository->updateOne($page, [
             'contentable_type' => $class,
             'contentable_id' => $id,
         ]);
-    }
-
-    /**
-     * @param  array<string, array<string, mixed>>  $translations
-     */
-    private function syncContentPageTranslations(ContentPage $page, array $translations): void
-    {
-        foreach (config('marine.locales') as $locale) {
-            if (! isset($translations[$locale])) {
-                continue;
-            }
-            if (! MarineLocale::isSupported((string) $locale)) {
-                continue;
-            }
-            $row = NormalizeTranslationInput::contentPageLocaleRow($translations[$locale]);
-            $page->translations()->updateOrCreate(
-                ['locale' => $locale],
-                $row
-            );
-        }
     }
 
     /**

@@ -6,6 +6,8 @@ use App\Contracts\Repositories\ProjectRepositoryInterface;
 use App\Models\Project;
 use App\Models\ProjectTranslation;
 use App\Support\AdminListQuery;
+use App\Support\MarineLocale;
+use App\Support\NormalizeTranslationInput;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -83,5 +85,25 @@ final class ProjectRepository extends BaseRepository implements ProjectRepositor
         }
 
         return $query;
+    }
+
+    /**
+     * @param  array<string, array<string, mixed>>  $translations
+     */
+    public function syncProjectTranslations(Project $project, array $translations): void
+    {
+        foreach (config('marine.locales') as $locale) {
+            if (! isset($translations[$locale])) {
+                continue;
+            }
+            if (! MarineLocale::isSupported((string) $locale)) {
+                continue;
+            }
+            $row = NormalizeTranslationInput::projectLocaleRow($translations[$locale]);
+            $project->translations()->updateOrCreate(
+                ['locale' => $locale],
+                $row
+            );
+        }
     }
 }

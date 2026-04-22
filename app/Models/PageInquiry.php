@@ -7,11 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 
 #[Fillable([
     'name',
-    'email',
-    'phone',
     'company',
-    'vessel_name',
-    'imo',
+    'position',
+    'phone',
+    'email',
+    'vessel_types',
+    'vessels_count',
+    'vessel_flag',
+    'main_ports',
+    'required_services',
     'message',
     'source_page',
     'ip',
@@ -26,6 +30,9 @@ class PageInquiry extends Model
     {
         return [
             'read_at' => 'datetime',
+            'vessel_types' => 'array',
+            'required_services' => 'array',
+            'vessels_count' => 'integer',
         ];
     }
 }

@@ -7,8 +7,6 @@ use App\Contracts\Services\ServiceServiceInterface;
 use App\DTO\Service\StoreServiceDto;
 use App\DTO\Service\UpdateServiceDto;
 use App\Models\Service;
-use App\Support\MarineLocale;
-use App\Support\NormalizeTranslationInput;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -48,7 +46,7 @@ final class ServiceService implements ServiceServiceInterface
                 'image_path' => $imagePath,
             ]);
 
-            $this->syncServiceTranslations($service, $dto->translations);
+            $this->serviceRepository->syncServiceTranslations($service, $dto->translations);
 
             return $service->load(['translations', 'contentPage.translations']);
         });
@@ -84,7 +82,7 @@ final class ServiceService implements ServiceServiceInterface
 
         if ($dto->translations !== null) {
             DB::transaction(function () use ($service, $dto): void {
-                $this->syncServiceTranslations($service, $dto->translations);
+                $this->serviceRepository->syncServiceTranslations($service, $dto->translations);
             });
         }
 
@@ -116,26 +114,6 @@ final class ServiceService implements ServiceServiceInterface
         }
         if (Storage::disk('public')->exists($path)) {
             Storage::disk('public')->delete($path);
-        }
-    }
-
-    /**
-     * @param  array<string, array<string, mixed>>  $translations
-     */
-    private function syncServiceTranslations(Service $service, array $translations): void
-    {
-        foreach (config('marine.locales') as $locale) {
-            if (! isset($translations[$locale])) {
-                continue;
-            }
-            if (! MarineLocale::isSupported((string) $locale)) {
-                continue;
-            }
-            $row = NormalizeTranslationInput::serviceLocaleRow($translations[$locale]);
-            $service->translations()->updateOrCreate(
-                ['locale' => $locale],
-                $row
-            );
         }
     }
 

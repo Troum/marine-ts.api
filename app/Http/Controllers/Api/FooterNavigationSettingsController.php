@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\DTO\Footer\UpdateFooterNavigationSettingsDto;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\UpdateFooterNavigationSettingsRequest;
+use App\Http\Requests\Contacts\UpdateFooterNavigationSettingsRequest;
 use App\Http\Resources\FooterNavigationSettingsResource;
 use App\Services\FooterNavigationSettingsService;
 

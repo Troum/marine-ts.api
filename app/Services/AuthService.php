@@ -16,19 +16,20 @@ final class AuthService implements AuthServiceInterface
 
     /**
      * @return array{token: string, user: array<string, mixed>}
+     *
      * @throws AuthenticationException
      */
     public function login(LoginDto $dto): array
     {
-        $user = $this->userRepository->findByUsername($dto->username);
+        $user = $this->userRepository->findByUsernameForAuth($dto->username);
 
         if (! $user || ! Hash::check($dto->password, $user->password)) {
             throw new AuthenticationException(__('auth.failed'));
         }
 
-        $user->tokens()->delete();
+        $this->userRepository->revokeAllApiTokens($user);
 
-        $token = $user->createToken('api')->plainTextToken;
+        $token = $this->userRepository->createApiToken($user, 'api');
 
         $primaryRole = $user->roles->first();
 

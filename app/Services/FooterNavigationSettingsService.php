@@ -2,21 +2,25 @@
 
 namespace App\Services;
 
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
 use App\DTO\Footer\UpdateFooterNavigationSettingsDto;
-use App\Models\SiteSetting;
 
 class FooterNavigationSettingsService
 {
     public const string KEY = 'footer_navigation';
+
+    public function __construct(
+        private readonly SiteSettingRepositoryInterface $siteSettingRepository,
+    ) {}
 
     /**
      * @return array{columns: list<array<string, mixed>>, legal: list<array<string, mixed>>}
      */
     public function getFooterNavigation(): array
     {
-        $row = SiteSetting::query()->where('key', self::KEY)->first();
-        if ($row !== null && is_array($row->value)) {
-            return $this->normalize($row->value);
+        $value = $this->siteSettingRepository->getValueByKey(self::KEY);
+        if ($value !== null) {
+            return $this->normalize($value);
         }
 
         return $this->defaultFooterNavigation();
@@ -31,10 +35,7 @@ class FooterNavigationSettingsService
             'columns' => $dto->columns,
             'legal' => $dto->legal,
         ]);
-        SiteSetting::query()->updateOrCreate(
-            ['key' => self::KEY],
-            ['value' => $normalized],
-        );
+        $this->siteSettingRepository->updateOrCreateValue(self::KEY, $normalized);
 
         return $normalized;
     }

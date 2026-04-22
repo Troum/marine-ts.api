@@ -7,6 +7,8 @@ use App\DTO\GalleryItem\StoreGalleryItemDto;
 use App\DTO\GalleryItem\UpdateGalleryItemDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GalleryItem\DestroyGalleryItemRequest;
+use App\Http\Requests\GalleryItem\ManageGalleryIndexRequest;
+use App\Http\Requests\GalleryItem\PublicGalleryIndexRequest;
 use App\Http\Requests\GalleryItem\ReplaceGalleryImageRequest;
 use App\Http\Requests\GalleryItem\StoreGalleryItemRequest;
 use App\Http\Requests\GalleryItem\UpdateGalleryItemRequest;
@@ -23,13 +25,13 @@ class GalleryItemController extends Controller
         private readonly GalleryItemServiceInterface $galleryItemService,
     ) {}
 
-    public function index(): AnonymousResourceCollection
+    public function index(PublicGalleryIndexRequest $request): AnonymousResourceCollection
     {
         return GalleryItemResource::collection($this->galleryItemService->listForManage());
     }
 
     /** Список для админки: те же данные, путь `/gallery/manage` включает полные `translations` в JSON. */
-    public function manageIndex(): AnonymousResourceCollection
+    public function manageIndex(ManageGalleryIndexRequest $request): AnonymousResourceCollection
     {
         return GalleryItemResource::collection($this->galleryItemService->listForManage());
     }

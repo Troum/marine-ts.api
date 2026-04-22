@@ -6,6 +6,8 @@ use App\Contracts\Repositories\ServiceRepositoryInterface;
 use App\Models\Service;
 use App\Models\ServiceTranslation;
 use App\Support\AdminListQuery;
+use App\Support\MarineLocale;
+use App\Support\NormalizeTranslationInput;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -69,5 +71,25 @@ final class ServiceRepository extends BaseRepository implements ServiceRepositor
         }
 
         return $query;
+    }
+
+    /**
+     * @param  array<string, array<string, mixed>>  $translations
+     */
+    public function syncServiceTranslations(Service $service, array $translations): void
+    {
+        foreach (config('marine.locales') as $locale) {
+            if (! isset($translations[$locale])) {
+                continue;
+            }
+            if (! MarineLocale::isSupported((string) $locale)) {
+                continue;
+            }
+            $row = NormalizeTranslationInput::serviceLocaleRow($translations[$locale]);
+            $service->translations()->updateOrCreate(
+                ['locale' => $locale],
+                $row
+            );
+        }
     }
 }

@@ -2,21 +2,25 @@
 
 namespace App\Services;
 
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
 use App\DTO\Navigation\UpdateNavigationSettingsDto;
-use App\Models\SiteSetting;
 
 class NavigationSettingsService
 {
     public const string KEY = 'navigation';
+
+    public function __construct(
+        private readonly SiteSettingRepositoryInterface $siteSettingRepository,
+    ) {}
 
     /**
      * @return array{main: list<array<string, mixed>>, more: list<array<string, mixed>>}
      */
     public function getNavigation(): array
     {
-        $row = SiteSetting::query()->where('key', self::KEY)->first();
-        if ($row !== null && is_array($row->value)) {
-            return $this->normalize($row->value);
+        $value = $this->siteSettingRepository->getValueByKey(self::KEY);
+        if ($value !== null) {
+            return $this->normalize($value);
         }
 
         return $this->defaultNavigation();
@@ -31,10 +35,7 @@ class NavigationSettingsService
             'main' => $dto->main,
             'more' => $dto->more,
         ]);
-        SiteSetting::query()->updateOrCreate(
-            ['key' => self::KEY],
-            ['value' => $normalized],
-        );
+        $this->siteSettingRepository->updateOrCreateValue(self::KEY, $normalized);
 
         return $normalized;
     }

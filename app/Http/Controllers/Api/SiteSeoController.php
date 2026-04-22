@@ -5,10 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Contracts\Services\SiteSeoServiceInterface;
 use App\DTO\SiteSeo\UpdateSiteSeoPageDto;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SiteSeo\IndexSiteSeoPagesRequest;
 use App\Http\Requests\SiteSeo\UpdateSiteSeoPageRequest;
 use App\Http\Resources\SiteSeoPageResource;
-use App\Support\AdminListQuery;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class SiteSeoController extends Controller
@@ -17,14 +16,11 @@ class SiteSeoController extends Controller
         private readonly SiteSeoServiceInterface $siteSeoService,
     ) {}
 
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(IndexSiteSeoPagesRequest $request): AnonymousResourceCollection
     {
-        $filters = array_merge(
-            AdminListQuery::sortOrder($request, ['id', 'slug', 'label'], 'slug', 'asc'),
-            array_filter(['search' => AdminListQuery::search($request)])
-        );
+        $dto = $request->toPaginatedTableDto();
 
-        return SiteSeoPageResource::collection($this->siteSeoService->listForAdmin($filters));
+        return SiteSeoPageResource::collection($this->siteSeoService->listForAdmin($dto->filters));
     }
 
     public function show(string $slug): SiteSeoPageResource

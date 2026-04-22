@@ -18,7 +18,7 @@ class MediaUploadController extends Controller
     {
         $url = $this->mediaUploadService->storePublic($request->file('file'));
 
-        return (new MediaUploadedResource(['url' => $url]))
+        return new MediaUploadedResource(['url' => $url])
             ->response()
             ->setStatusCode(201);
     }

@@ -7,8 +7,6 @@ use App\Contracts\Services\NewsServiceInterface;
 use App\DTO\News\StoreNewsDto;
 use App\DTO\News\UpdateNewsDto;
 use App\Models\News;
-use App\Support\MarineLocale;
-use App\Support\NormalizeTranslationInput;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
@@ -31,8 +29,7 @@ final class NewsService implements NewsServiceInterface
 
     public function getBySlug(string $slug): News
     {
-        /** @var News */
-        return News::query()->where('slug', $slug)->with('translations')->firstOrFail();
+        return $this->newsRepository->findBySlugWithTranslations($slug);
     }
 
     public function create(StoreNewsDto $dto): News
@@ -43,11 +40,11 @@ final class NewsService implements NewsServiceInterface
         }
 
         $defaultRow = $dto->translations[$default];
-        $slug = $dto->slug ?? News::ensureUniqueSlug(
-            News::slugFromTitle(is_array($defaultRow) ? (string) ($defaultRow['title'] ?? '') : ''),
+        $slug = $dto->slug ?? $this->newsRepository->uniqueSlugForTitle(
+            is_array($defaultRow) ? (string) ($defaultRow['title'] ?? '') : '',
         );
 
-        return DB::transaction(function () use ($dto, $slug, $default): News {
+        return DB::transaction(function () use ($dto, $slug): News {
             /** @var News $news */
             $news = $this->newsRepository->createOne(array_filter([
                 'slug' => $slug,
@@ -57,7 +54,7 @@ final class NewsService implements NewsServiceInterface
                 'image' => $dto->image,
             ], static fn (mixed $v): bool => $v !== null));
 
-            $this->syncNewsTranslations($news, $dto->translations);
+            $this->newsRepository->syncNewsTranslations($news, $dto->translations);
 
             return $news->load('translations');
         });
@@ -78,7 +75,7 @@ final class NewsService implements NewsServiceInterface
 
         if ($dto->translations !== null) {
             DB::transaction(function () use ($news, $dto): void {
-                $this->syncNewsTranslations($news, $dto->translations);
+                $this->newsRepository->syncNewsTranslations($news, $dto->translations);
             });
         }
 
@@ -88,26 +85,6 @@ final class NewsService implements NewsServiceInterface
     public function delete(News $news, bool $soft = true): void
     {
         $this->newsRepository->deleteOne($news, $soft);
-    }
-
-    /**
-     * @param  array<string, array<string, mixed>>  $translations
-     */
-    private function syncNewsTranslations(News $news, array $translations): void
-    {
-        foreach (config('marine.locales') as $locale) {
-            if (! isset($translations[$locale])) {
-                continue;
-            }
-            if (! MarineLocale::isSupported((string) $locale)) {
-                continue;
-            }
-            $row = NormalizeTranslationInput::newsLocaleRow($translations[$locale]);
-            $news->translations()->updateOrCreate(
-                ['locale' => $locale],
-                $row
-            );
-        }
     }
 
     /**

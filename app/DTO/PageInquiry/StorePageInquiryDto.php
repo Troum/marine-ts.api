@@ -10,23 +10,46 @@ final class StorePageInquiryDto extends BaseDto
     #[MapProperty(from: ['name'], required: true)]
     public readonly string $name;
 
+    #[MapProperty(from: ['company'], required: true)]
+    public readonly string $company;
+
+    #[MapProperty(from: ['position'], required: false)]
+    public readonly ?string $position;
+
+    #[MapProperty(from: ['phone'], required: true)]
+    public readonly string $phone;
+
     #[MapProperty(from: ['email'], required: true)]
     public readonly string $email;
 
-    #[MapProperty(from: ['phone'], required: false)]
-    public readonly ?string $phone;
+    /**
+     * Машинно-читаемые id типов судна (sukhogruz, tanker, container, ...),
+     * перечень синхронизирован с фронтом (`PageInquiryForm.vue`).
+     *
+     * @var list<string>
+     */
+    #[MapProperty(from: ['vessel_types'], required: true)]
+    public readonly array $vessel_types;
 
-    #[MapProperty(from: ['company'], required: false)]
-    public readonly ?string $company;
+    #[MapProperty(from: ['vessels_count'], required: true)]
+    public readonly int $vessels_count;
 
-    #[MapProperty(from: ['vessel_name'], required: false)]
-    public readonly ?string $vessel_name;
+    #[MapProperty(from: ['vessel_flag'], required: true)]
+    public readonly string $vessel_flag;
 
-    #[MapProperty(from: ['imo'], required: false)]
-    public readonly ?string $imo;
+    #[MapProperty(from: ['main_ports'], required: false)]
+    public readonly ?string $main_ports;
 
-    #[MapProperty(from: ['message'], required: true)]
-    public readonly string $message;
+    /**
+     * Машинно-читаемые id требуемых услуг (technical, crewing, audit, ...).
+     *
+     * @var list<string>
+     */
+    #[MapProperty(from: ['required_services'], required: true)]
+    public readonly array $required_services;
+
+    #[MapProperty(from: ['message'], required: false)]
+    public readonly ?string $message;
 
     #[MapProperty(from: ['source_page'], required: true)]
     public readonly string $source_page;

@@ -6,5 +6,9 @@ use App\Models\User;
 
 interface UserRepositoryInterface extends BaseRepositoryInterface
 {
-    public function findByUsername(string $username): ?User;
+    public function findByUsernameForAuth(string $username): ?User;
+
+    public function revokeAllApiTokens(User $user): void;
+
+    public function createApiToken(User $user, string $name): string;
 }
