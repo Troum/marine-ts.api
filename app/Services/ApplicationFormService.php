@@ -89,6 +89,24 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
         return $this->applicationFormRepository->getOne($applicationForm->id);
     }
 
+    public function destroy(ApplicationForm $applicationForm): void
+    {
+        $id = (int) $applicationForm->getKey();
+        $paths = $this->applicationFormStoragePaths($applicationForm);
+
+        $this->applicationFormRepository->deleteOne($applicationForm, false);
+
+        $disk = Storage::disk('local');
+        foreach ($paths as $path) {
+            if ($this->isSafeApplicationFormStoragePath($path, $id)) {
+                $disk->delete($path);
+            }
+        }
+        foreach ($this->applicationFormStorageDirectories($id) as $directory) {
+            $disk->deleteDirectory($directory);
+        }
+    }
+
     /**
      * @param  list<string>  $documentKeys
      */
@@ -234,5 +252,66 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
         }
 
         return mb_substr((string) ($payload['email'] ?? ''), 0, 500);
+    }
+
+    /**
+     * Все файлы анкеты складываются в директории по ID, поэтому удаление
+     * директорий покрывает фото, дозагруженные документы и будущие PDF-кэши.
+     *
+     * @return list<string>
+     */
+    private function applicationFormStorageDirectories(int $applicationFormId): array
+    {
+        return [
+            'application-form-photos/'.$applicationFormId,
+            'application-form-supplements/'.$applicationFormId,
+            'application-form-pdfs/'.$applicationFormId,
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function applicationFormStoragePaths(ApplicationForm $applicationForm): array
+    {
+        $payload = is_array($applicationForm->payload) ? $applicationForm->payload : [];
+        $paths = [];
+
+        foreach (['photoStoredPath', 'photo_stored_path', 'pdfStoredPath', 'pdf_stored_path'] as $key) {
+            if (isset($payload[$key]) && is_string($payload[$key]) && $payload[$key] !== '') {
+                $paths[] = $payload[$key];
+            }
+        }
+
+        foreach (['supplementaryFiles', 'supplementary_files'] as $mapKey) {
+            if (! is_array($payload[$mapKey] ?? null)) {
+                continue;
+            }
+            foreach ($payload[$mapKey] as $entry) {
+                if (! is_array($entry)) {
+                    continue;
+                }
+                foreach (['storedPath', 'stored_path'] as $pathKey) {
+                    if (isset($entry[$pathKey]) && is_string($entry[$pathKey]) && $entry[$pathKey] !== '') {
+                        $paths[] = $entry[$pathKey];
+                    }
+                }
+            }
+        }
+
+        return array_values(array_unique($paths));
+    }
+
+    private function isSafeApplicationFormStoragePath(string $path, int $applicationFormId): bool
+    {
+        $path = ltrim($path, '/');
+
+        foreach ($this->applicationFormStorageDirectories($applicationFormId) as $directory) {
+            if (Str::startsWith($path, $directory.'/')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

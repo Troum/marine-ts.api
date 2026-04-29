@@ -21,4 +21,9 @@ class ApplicationFormPolicy
     {
         return $user->can('manage vacancies');
     }
+
+    public function delete(User $user, ApplicationForm $applicationForm): bool
+    {
+        return $user->can('manage vacancies');
+    }
 }

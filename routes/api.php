@@ -92,6 +92,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->whereNumber('application_form')
         ->where('key', '[a-zA-Z0-9:_\-\.]+');
     Route::patch('/application-forms/{application_form}', [ApplicationFormController::class, 'updateStatus'])->whereNumber('application_form');
+    Route::delete('/application-forms/{application_form}', [ApplicationFormController::class, 'destroy'])->whereNumber('application_form');
     Route::post('/application-forms/{application_form}/request-documents', [ApplicationFormController::class, 'requestDocuments'])->whereNumber('application_form');
     Route::get('/vacancies/manage/{vacancy}', [VacancyController::class, 'show'])->whereNumber('vacancy');
     Route::post('/vacancies', [VacancyController::class, 'store']);

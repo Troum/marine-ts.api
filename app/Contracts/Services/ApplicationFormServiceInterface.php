@@ -33,6 +33,11 @@ interface ApplicationFormServiceInterface
     public function updateStatus(ApplicationForm $applicationForm, ApplicationFormStatus $status): ApplicationForm;
 
     /**
+     * Удалить анкету и файлы, которые были сохранены вместе с ней.
+     */
+    public function destroy(ApplicationForm $applicationForm): void;
+
+    /**
      * @param  list<string>  $documentKeys
      */
     public function requestDocuments(ApplicationForm $applicationForm, array $documentKeys): ApplicationForm;

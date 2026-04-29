@@ -21,6 +21,7 @@ use App\Models\Vacancy;
 use App\Support\RequestedDocumentCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 use Mycro\Core\Exceptions\DtoHydrationException;
 use Mycro\Core\Exceptions\ReadonlyPropertyUpdateException;
 
@@ -163,5 +164,14 @@ class ApplicationFormController extends Controller
         );
 
         return new ApplicationFormResource($applicationForm->load('vacancy.translations'));
+    }
+
+    public function destroy(ApplicationForm $application_form): Response
+    {
+        $this->authorize('delete', $application_form);
+
+        $this->applicationFormService->destroy($application_form);
+
+        return response()->noContent();
     }
 }
