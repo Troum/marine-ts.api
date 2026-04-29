@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Contracts\Services\ApplicationFormServiceInterface;
 use App\DTO\ApplicationForm\StoreApplicationFormDto;
 use App\DTO\ApplicationForm\StoreOpenApplicationFormDto;
+use App\Enums\ApplicationFormStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ApplicationForm\IndexApplicationFormsForVacancyRequest;
 use App\Http\Requests\ApplicationForm\IndexApplicationFormsManageRequest;
@@ -139,7 +140,7 @@ class ApplicationFormController extends Controller
     ): ApplicationFormResource {
         $applicationForm = $this->applicationFormService->updateStatus(
             $application_form,
-            $request->validated('status'),
+            ApplicationFormStatus::from($request->validated('status')),
         );
 
         return new ApplicationFormResource($applicationForm->load('vacancy.translations'));
