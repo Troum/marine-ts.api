@@ -86,5 +86,31 @@ class StorePageInquiryRequest extends FormRequest
                 $this->merge([$snake => $this->input($camel)]);
             }
         }
+
+        $trimmed = [];
+        foreach ([
+            'name',
+            'company',
+            'position',
+            'phone',
+            'email',
+            'vessel_flag',
+            'main_ports',
+            'message',
+            'source_page',
+        ] as $key) {
+            if (! $this->has($key) || ! is_string($this->input($key))) {
+                continue;
+            }
+
+            $value = trim((string) $this->input($key));
+            $trimmed[$key] = in_array($key, ['position', 'main_ports', 'message'], true) && $value === ''
+                ? null
+                : $value;
+        }
+
+        if ($trimmed !== []) {
+            $this->merge($trimmed);
+        }
     }
 }
