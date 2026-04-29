@@ -44,7 +44,17 @@ class IndexContentPagesRequest extends FormRequest
             $filters['published_filter'] = $published;
         }
 
-        $filters['exclude_slugs'] = ['home', 'about', 'crewing-management', 'contacts', 'services', 'projects', 'gallery'];
+        $filters['exclude_slugs'] = [
+            'home',
+            'about',
+            'crewing-management',
+            'contacts-page',
+            'services-page',
+            'projects-page',
+            'privacy',
+            'vacancies-page',
+            'ship-management',
+        ];
 
         return new PaginatedTableRequestDto(
             perPage: min(max((int) ($v['per_page'] ?? 100), 1), 500),

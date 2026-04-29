@@ -16,4 +16,9 @@ final class MediaUploadService implements MediaUploadServiceInterface
     {
         return $this->publicMediaStorageRepository->storePublicMedia($file);
     }
+
+    public function listPublicImages(): array
+    {
+        return $this->publicMediaStorageRepository->listPublicMediaImages();
+    }
 }

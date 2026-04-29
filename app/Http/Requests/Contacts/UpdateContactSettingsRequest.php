@@ -19,7 +19,7 @@ class UpdateContactSettingsRequest extends FormRequest
     {
         return [
             'quick' => ['required', 'array', 'min:1', 'max:20'],
-            'quick.*.iconKey' => ['required', 'string', Rule::in(['phone', 'mail', 'map-pin', 'clock'])],
+            'quick.*.iconKey' => ['required', 'string', Rule::in(['phone', 'mail', 'map-pin', 'clock', 'link'])],
             'quick.*.label' => ['required', 'string', 'max:120'],
             'quick.*.value' => ['required', 'string', 'max:500'],
             'quick.*.href' => ['nullable', 'string', 'max:500'],

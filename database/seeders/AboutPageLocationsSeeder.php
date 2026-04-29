@@ -11,7 +11,7 @@ use Illuminate\Database\Seeder;
  *
  * Поведение:
  *   • Если страница `about` существует и в её body-переводе уже валидный
- *     JSON c полем `hero` (т.е. админ хотя бы раз сохранял страницу) —
+ *     JSON c полем `sec1Hero` или устаревшим `hero` — тогда обновляются ТОЛЬКО
  *     обновляются ТОЛЬКО `geography.locations`, остальные поля
  *     (тексты, миссия, сертификаты, фоновые изображения) НЕ трогаются.
  *   • Если страница не найдена или body пустой/невалидный — сидер
@@ -126,8 +126,8 @@ class AboutPageLocationsSeeder extends Seeder
         if (! $page) {
             $this->command?->warn(
                 'AboutPageLocationsSeeder: страница "about" в content_pages не найдена. '
-                . 'Откройте админку → «О компании» → «Сохранить» один раз, чтобы создать запись, '
-                . 'затем перезапустите сидер.'
+                .'Откройте админку → «О компании» → «Сохранить» один раз, чтобы создать запись, '
+                .'затем перезапустите сидер.'
             );
 
             return;
@@ -141,7 +141,7 @@ class AboutPageLocationsSeeder extends Seeder
             $rawBody = (string) $translation->body;
 
             $parsed = json_decode($rawBody, true);
-            if (! is_array($parsed) || ! isset($parsed['hero'])) {
+            if (! is_array($parsed) || (! isset($parsed['sec1Hero']) && ! isset($parsed['hero']))) {
                 $this->command?->warn(sprintf(
                     'AboutPageLocationsSeeder: локаль "%s" — body пустой или не содержит структуру AboutPageData; пропускаем.',
                     $locale

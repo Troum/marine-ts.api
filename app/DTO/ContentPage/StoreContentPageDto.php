@@ -23,6 +23,10 @@ final class StoreContentPageDto extends BaseDto
     #[DefaultValue(false)]
     public readonly bool $show_inquiry_form;
 
+    #[MapProperty(from: ['showPublicTitle', 'show_public_title'], required: false)]
+    #[DefaultValue(true)]
+    public readonly bool $show_public_title;
+
     /**
      * @var array<string, array<string, mixed>>
      */

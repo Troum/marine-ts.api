@@ -26,7 +26,7 @@ final class ContentPageService implements ContentPageServiceInterface
 
     public function getById(int|string $id): ContentPage
     {
-        /** @var ContentPage */
+        /** @var ContentPage $page */
         $page = $this->contentPageRepository->getOne($id);
         $page->load('translations');
         if ($page->contentable !== null) {
@@ -69,6 +69,7 @@ final class ContentPageService implements ContentPageServiceInterface
                 'is_published' => $dto->is_published,
                 'sort_order' => $dto->sort_order,
                 'show_inquiry_form' => $dto->show_inquiry_form,
+                'show_public_title' => $dto->show_public_title,
             ]);
 
             $this->contentPageRepository->syncContentPageTranslations($page, $dto->translations);

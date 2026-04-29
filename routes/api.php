@@ -140,6 +140,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/content-pages/{content_page}', [ContentPageController::class, 'update'])->whereNumber('content_page');
     Route::delete('/content-pages/{content_page}', [ContentPageController::class, 'destroy'])->whereNumber('content_page');
 
+    Route::get('/media/manage', [MediaUploadController::class, 'manageIndex']);
     Route::post('/media', [MediaUploadController::class, 'store'])->middleware('throttle:30,1');
 
     Route::post('/gallery', [GalleryItemController::class, 'store']);

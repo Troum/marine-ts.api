@@ -6,6 +6,7 @@ use App\Models\ContentPage;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class StoreContentPageRequest extends FormRequest
 {
@@ -30,6 +31,9 @@ class StoreContentPageRequest extends FormRequest
         }
         if ($this->has('show_inquiry_form') && ! $this->has('showInquiryForm')) {
             $this->merge(['showInquiryForm' => $this->boolean('show_inquiry_form')]);
+        }
+        if ($this->has('show_public_title') && ! $this->has('showPublicTitle')) {
+            $this->merge(['showPublicTitle' => $this->boolean('show_public_title')]);
         }
 
         $default = (string) config('marine.default_locale');
@@ -73,6 +77,8 @@ class StoreContentPageRequest extends FormRequest
             'contentable_id' => ['sometimes', 'nullable', 'integer', 'min:1'],
             'showInquiryForm' => ['sometimes', 'boolean'],
             'show_inquiry_form' => ['sometimes', 'boolean'],
+            'showPublicTitle' => ['sometimes', 'boolean'],
+            'show_public_title' => ['sometimes', 'boolean'],
         ];
 
         foreach ($locales as $loc) {
@@ -90,9 +96,9 @@ class StoreContentPageRequest extends FormRequest
         return $rules;
     }
 
-    public function withValidator(\Illuminate\Validation\Validator $validator): void
+    public function withValidator(Validator $validator): void
     {
-        $validator->after(function (\Illuminate\Validation\Validator $validator): void {
+        $validator->after(function (Validator $validator): void {
             $type = $this->input('contentableType') ?? $this->input('contentable_type');
             $id = $this->input('contentableId') ?? $this->input('contentable_id');
             if ($type === null && $id === null) {

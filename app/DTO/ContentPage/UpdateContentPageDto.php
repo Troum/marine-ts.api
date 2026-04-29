@@ -19,6 +19,9 @@ final class UpdateContentPageDto extends BaseDto
     #[MapProperty(from: ['showInquiryForm', 'show_inquiry_form'], required: false)]
     public readonly ?bool $show_inquiry_form;
 
+    #[MapProperty(from: ['showPublicTitle', 'show_public_title'], required: false)]
+    public readonly ?bool $show_public_title;
+
     /**
      * @var array<string, array<string, mixed>>|null
      */

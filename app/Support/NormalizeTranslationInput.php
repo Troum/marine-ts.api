@@ -84,10 +84,13 @@ final class NormalizeTranslationInput
      */
     public static function contentPageLocaleRow(array $row): array
     {
+        $titleRaw = $row['title'] ?? '';
+        $bodyRaw = $row['body'] ?? '<p></p>';
+
         return [
-            'title' => $row['title'],
+            'title' => $titleRaw === null ? '' : (string) $titleRaw,
             'excerpt' => $row['excerpt'] ?? null,
-            'body' => $row['body'],
+            'body' => $bodyRaw === null ? '<p></p>' : (string) $bodyRaw,
             'seo_title' => $row['seoTitle'] ?? $row['seo_title'] ?? null,
             'seo_description' => $row['seoDescription'] ?? $row['seo_description'] ?? null,
             'seo_keywords' => $row['seoKeywords'] ?? $row['seo_keywords'] ?? null,

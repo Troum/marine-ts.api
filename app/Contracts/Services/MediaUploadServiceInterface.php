@@ -10,4 +10,9 @@ interface MediaUploadServiceInterface
      * Сохраняет файл в public disk и возвращает публичный URL.
      */
     public function storePublic(UploadedFile $file): string;
+
+    /**
+     * @return list<array{url: string, filename: string, size: int, modified_at: string}>
+     */
+    public function listPublicImages(): array;
 }

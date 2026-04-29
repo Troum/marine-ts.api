@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Contracts\Services\MediaUploadServiceInterface;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Media\ManageMediaIndexRequest;
 use App\Http\Requests\Media\StoreMediaUploadRequest;
 use App\Http\Resources\MediaUploadedResource;
 use Illuminate\Http\JsonResponse;
@@ -13,6 +14,13 @@ class MediaUploadController extends Controller
     public function __construct(
         private readonly MediaUploadServiceInterface $mediaUploadService,
     ) {}
+
+    public function manageIndex(ManageMediaIndexRequest $request): JsonResponse
+    {
+        return response()->json([
+            'data' => $this->mediaUploadService->listPublicImages(),
+        ]);
+    }
 
     public function store(StoreMediaUploadRequest $request): JsonResponse
     {

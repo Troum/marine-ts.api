@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'is_published',
     'sort_order',
     'show_inquiry_form',
+    'show_public_title',
     'contentable_type',
     'contentable_id',
 ])]
@@ -44,6 +45,7 @@ class ContentPage extends Model
             'is_published' => 'boolean',
             'sort_order' => 'integer',
             'show_inquiry_form' => 'boolean',
+            'show_public_title' => 'boolean',
         ];
     }
 }

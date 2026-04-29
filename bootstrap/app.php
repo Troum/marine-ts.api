@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\ImportJoomlaContent;
 use App\Http\Middleware\SetApiLocale;
 use App\Http\Middleware\TelescopeDashboardHttpHeaders;
 use Illuminate\Foundation\Application;
@@ -15,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withCommands([
+        ImportJoomlaContent::class,
+    ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(TelescopeDashboardHttpHeaders::class);
 
