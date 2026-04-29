@@ -8,6 +8,8 @@ use App\Enums\ApplicationFormStatus;
 use App\Models\ApplicationForm;
 use App\Models\Vacancy;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\UploadedFile;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 interface ApplicationFormServiceInterface
 {
@@ -41,4 +43,15 @@ interface ApplicationFormServiceInterface
      * @return mixed ответ Spatie Laravel PDF (download)
      */
     public function pdfDownload(ApplicationForm $applicationForm);
+
+    /**
+     * Прикрепить фото кандидата к уже созданной анкете.
+     * Файл сохраняется на disk `local`, метаданные пишутся в `payload`.
+     */
+    public function attachPhoto(ApplicationForm $applicationForm, UploadedFile $file): ApplicationForm;
+
+    /**
+     * Скачать (или показать) фото кандидата (admin-эндпоинт).
+     */
+    public function downloadPhoto(ApplicationForm $applicationForm): StreamedResponse;
 }

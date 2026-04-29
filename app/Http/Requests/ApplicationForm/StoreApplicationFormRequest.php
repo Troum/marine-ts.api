@@ -13,6 +13,25 @@ class StoreApplicationFormRequest extends FormRequest
     }
 
     /**
+     * Поддерживаем оба формата:
+     *  - чистый JSON (как раньше) — все поля попадают сразу в input;
+     *  - multipart/form-data, где payload приходит JSON-строкой в поле `payload`,
+     *    а `photo` — отдельным файлом. Распаковываем JSON и подмешиваем к input,
+     *    чтобы все обычные правила работали без изменений.
+     */
+    protected function prepareForValidation(): void
+    {
+        $rawPayload = $this->input('payload');
+        if (is_string($rawPayload) && $rawPayload !== '') {
+            $decoded = json_decode($rawPayload, true);
+            if (is_array($decoded)) {
+                $this->merge($decoded);
+                $this->request->remove('payload');
+            }
+        }
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function rules(): array
@@ -32,6 +51,8 @@ class StoreApplicationFormRequest extends FormRequest
             'consentRuPd' => ['accepted'],
             'consentEnAccuracy' => ['accepted'],
             'consentEnPd' => ['accepted'],
+            /** Фото кандидата: опционально, до 5 МБ, jpg/png/webp. */
+            'photo' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }
 }

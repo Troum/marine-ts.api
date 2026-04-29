@@ -128,9 +128,11 @@
                 </table>
             </td>
             <td class="photo-box" style="width:25%;">
-                @if($photoFileName !== '')
+                @if($photoDataUri !== '')
+                    <img src="{{ $photoDataUri }}" alt="Photo" style="max-width:120px; max-height:160px; display:inline-block;" />
+                @elseif($photoFileName !== '')
                     <div>{{ $photoFileName }}</div>
-                    <div style="font-size:8px; color:#444; margin-top:6px; line-height:1.2;">Имя файла с формы; изображение на сервер не передаётся.<br />File name only; photo file is not uploaded to the server.</div>
+                    <div style="font-size:8px; color:#444; margin-top:6px; line-height:1.2;">Файл фото не сохранён на сервере.<br />Photo file is not stored on the server.</div>
                 @else
                     <span>Photo</span>
                 @endif

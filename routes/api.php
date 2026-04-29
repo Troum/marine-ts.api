@@ -87,6 +87,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/vacancies/manage/{vacancy}/application-forms', [ApplicationFormController::class, 'manageIndex'])->whereNumber('vacancy');
     Route::get('/application-forms/{application_form}', [ApplicationFormController::class, 'show'])->whereNumber('application_form');
     Route::get('/application-forms/{application_form}/pdf', [ApplicationFormController::class, 'downloadPdf'])->whereNumber('application_form');
+    Route::get('/application-forms/{application_form}/photo', [ApplicationFormController::class, 'downloadPhoto'])->whereNumber('application_form');
     Route::get('/application-forms/{application_form}/supplementary-files/{key}', ApplicationFormSupplementaryDownloadController::class)
         ->whereNumber('application_form')
         ->where('key', '[a-zA-Z0-9:_\-\.]+');

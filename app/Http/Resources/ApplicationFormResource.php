@@ -16,6 +16,9 @@ class ApplicationFormResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $payload = is_array($this->payload) ? $this->payload : [];
+        $hasPhoto = isset($payload['photoStoredPath']) && is_string($payload['photoStoredPath']) && $payload['photoStoredPath'] !== '';
+
         return [
             'id' => $this->id,
             'vacancyId' => $this->vacancy_id,
@@ -35,7 +38,8 @@ class ApplicationFormResource extends JsonResource
             'email' => $this->email,
             'phone' => $this->phone,
             'status' => $this->status?->value,
-            'payload' => $this->payload ?? [],
+            'payload' => $payload,
+            'hasPhoto' => $hasPhoto,
             'requestedDocumentKeys' => $this->requested_document_keys ?? [],
             'documentUploadExpiresAt' => $this->document_upload_token_expires_at?->toIso8601String(),
             'createdAt' => $this->created_at?->toIso8601String(),

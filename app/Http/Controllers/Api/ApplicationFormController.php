@@ -35,12 +35,27 @@ class ApplicationFormController extends Controller
      */
     public function store(StoreApplicationFormRequest $request, string $slug): JsonResponse
     {
+        /**
+         * `validated()` дёргаем только ради побочного эффекта (триггер валидации).
+         * В payload кладём весь исходный JSON — иначе из формы доедут только
+         * поля из `rules()`, и PDF/анкета окажутся пустыми.
+         * Поле `photo` обрабатываем отдельно — это файл, не serializable.
+         */
+        $request->validated();
+
         $dto = new StoreApplicationFormDto([
             'slug' => $slug,
-            'payload' => $request->validated(),
+            'payload' => $request->except(['photo']),
         ]);
 
         $applicationForm = $this->applicationFormService->storeForPublishedVacancy($dto);
+
+        if ($request->hasFile('photo')) {
+            $applicationForm = $this->applicationFormService->attachPhoto(
+                $applicationForm,
+                $request->file('photo'),
+            );
+        }
 
         return new ApplicationFormResource($applicationForm->fresh())
             ->response()
@@ -53,9 +68,20 @@ class ApplicationFormController extends Controller
      */
     public function storeOpen(StoreOpenApplicationFormRequest $request): JsonResponse
     {
+        $request->validated();
+
         $applicationForm = $this->applicationFormService->storeOpenApplication(
-            new StoreOpenApplicationFormDto($request->validated()),
+            new StoreOpenApplicationFormDto([
+                'payload' => $request->except(['photo']),
+            ]),
         );
+
+        if ($request->hasFile('photo')) {
+            $applicationForm = $this->applicationFormService->attachPhoto(
+                $applicationForm,
+                $request->file('photo'),
+            );
+        }
 
         return new ApplicationFormResource($applicationForm->fresh())
             ->response()
@@ -95,6 +121,16 @@ class ApplicationFormController extends Controller
         $this->authorize('view', $application_form);
 
         return $this->applicationFormService->pdfDownload($application_form);
+    }
+
+    /**
+     * Скачивание фотографии кандидата (admin).
+     */
+    public function downloadPhoto(ApplicationForm $application_form)
+    {
+        $this->authorize('view', $application_form);
+
+        return $this->applicationFormService->downloadPhoto($application_form);
     }
 
     public function updateStatus(

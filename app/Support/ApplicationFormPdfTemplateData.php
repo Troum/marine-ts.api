@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\ApplicationForm;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -68,7 +69,50 @@ final class ApplicationFormPdfTemplateData
             'consentEnAccuracy' => self::boolVal(self::pick($p, 'consentEnAccuracy')),
             'consentEnPd' => self::boolVal(self::pick($p, 'consentEnPd')),
             'mtsLogoDataUri' => self::mtsLogoDataUri(),
+            'photoDataUri' => self::photoDataUri($p),
         ];
+    }
+
+    /**
+     * Конвертирует загруженное фото из disk `local` в data URI для DomPDF.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private static function photoDataUri(array $payload): string
+    {
+        $path = self::pick($payload, 'photoStoredPath');
+        if (! is_string($path) || $path === '') {
+            return '';
+        }
+
+        $disk = Storage::disk('local');
+        if (! $disk->exists($path)) {
+            return '';
+        }
+
+        $raw = $disk->get($path);
+        if (! is_string($raw) || $raw === '') {
+            return '';
+        }
+
+        $mime = self::pick($payload, 'photoMime');
+        if (! is_string($mime) || $mime === '') {
+            $mime = self::guessMimeByExtension($path);
+        }
+
+        return 'data:'.$mime.';base64,'.base64_encode($raw);
+    }
+
+    private static function guessMimeByExtension(string $path): string
+    {
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        return match ($ext) {
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+            'gif' => 'image/gif',
+            default => 'image/jpeg',
+        };
     }
 
     /**

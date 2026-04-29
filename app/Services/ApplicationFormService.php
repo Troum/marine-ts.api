@@ -14,11 +14,15 @@ use App\Models\Vacancy;
 use App\Support\ApplicationFormPdfTemplateData;
 use App\Support\RequestedDocumentCatalog;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+use RuntimeException;
 use Spatie\LaravelPdf\Enums\Format;
 use Spatie\LaravelPdf\Facades\Pdf;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class ApplicationFormService implements ApplicationFormServiceInterface
 {
@@ -47,7 +51,7 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
 
     public function storeOpenApplication(StoreOpenApplicationFormDto $dto): ApplicationForm
     {
-        $payload = $this->camelCasePayloadKeys($dto->toPayloadArray());
+        $payload = $this->camelCasePayloadKeys($dto->payload);
         $fullName = $this->buildFullName($payload);
 
         /** @var ApplicationForm */
@@ -133,6 +137,62 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
             ->format(Format::A4)
             ->name($filename)
             ->download();
+    }
+
+    public function attachPhoto(ApplicationForm $applicationForm, UploadedFile $file): ApplicationForm
+    {
+        if (! $file->isValid()) {
+            throw new InvalidArgumentException('Photo upload is not valid.');
+        }
+
+        /** Удаляем старое фото, если кандидат повторно отправляет анкету и файл уже есть. */
+        $payload = is_array($applicationForm->payload) ? $applicationForm->payload : [];
+        $previousPath = isset($payload['photoStoredPath']) && is_string($payload['photoStoredPath'])
+            ? $payload['photoStoredPath']
+            : null;
+        if ($previousPath !== null && Storage::disk('local')->exists($previousPath)) {
+            Storage::disk('local')->delete($previousPath);
+        }
+
+        $ext = strtolower($file->getClientOriginalExtension() ?: 'bin');
+        $basename = 'photo_'.Str::uuid()->toString().'.'.$ext;
+        $path = $file->storeAs(
+            'application-form-photos/'.$applicationForm->id,
+            $basename,
+            'local',
+        );
+
+        if (! is_string($path) || $path === '') {
+            throw new RuntimeException('Failed to store application form photo.');
+        }
+
+        $payload['photoFileName'] = $file->getClientOriginalName();
+        $payload['photoStoredPath'] = $path;
+        $payload['photoMime'] = $file->getMimeType();
+        $payload['photoSize'] = $file->getSize();
+        $payload['photoUploadedAt'] = now()->toIso8601String();
+
+        $this->applicationFormRepository->updateOne($applicationForm, ['payload' => $payload]);
+
+        /** @var ApplicationForm */
+        return $this->applicationFormRepository->getOne($applicationForm->id);
+    }
+
+    public function downloadPhoto(ApplicationForm $applicationForm): StreamedResponse
+    {
+        $payload = is_array($applicationForm->payload) ? $applicationForm->payload : [];
+        $path = isset($payload['photoStoredPath']) && is_string($payload['photoStoredPath'])
+            ? $payload['photoStoredPath']
+            : null;
+        if ($path === null || ! Storage::disk('local')->exists($path)) {
+            abort(404);
+        }
+
+        $original = isset($payload['photoFileName']) && is_string($payload['photoFileName']) && $payload['photoFileName'] !== ''
+            ? $payload['photoFileName']
+            : basename($path);
+
+        return Storage::disk('local')->download($path, $original);
     }
 
     /**
