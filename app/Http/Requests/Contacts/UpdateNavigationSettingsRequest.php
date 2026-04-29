@@ -29,7 +29,7 @@ class UpdateNavigationSettingsRequest extends FormRequest
             'main.*.children.*.label.ru' => ['required', 'string', 'max:120'],
             'main.*.children.*.label.en' => ['required', 'string', 'max:120'],
 
-            'more' => ['required', 'array', 'max:20'],
+            'more' => ['present', 'array', 'max:20'],
             'more.*.path' => ['required', 'string', 'max:500'],
             'more.*.label' => ['required', 'array'],
             'more.*.label.ru' => ['required', 'string', 'max:120'],
