@@ -12,7 +12,11 @@ class StoreContentPageRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('create', ContentPage::class);
+        if (! $this->user()->can('create', ContentPage::class)) {
+            return false;
+        }
+
+        return $this->input('slug') !== 'vacancies-page' || ! $this->user()->hasRole('content_manager');
     }
 
     protected function prepareForValidation(): void

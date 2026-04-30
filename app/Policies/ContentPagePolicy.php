@@ -14,7 +14,7 @@ class ContentPagePolicy
 
     public function view(User $user, ContentPage $contentPage): bool
     {
-        return $user->can('manage content pages');
+        return $this->canManagePage($user, $contentPage);
     }
 
     public function create(User $user): bool
@@ -24,11 +24,24 @@ class ContentPagePolicy
 
     public function update(User $user, ContentPage $contentPage): bool
     {
-        return $user->can('manage content pages');
+        return $this->canManagePage($user, $contentPage);
     }
 
     public function delete(User $user, ContentPage $contentPage): bool
     {
-        return $user->can('manage content pages');
+        return $this->canManagePage($user, $contentPage);
+    }
+
+    private function canManagePage(User $user, ContentPage $contentPage): bool
+    {
+        if (! $user->can('manage content pages')) {
+            return false;
+        }
+
+        if ($contentPage->slug === 'vacancies-page' && $user->hasRole('content_manager')) {
+            return false;
+        }
+
+        return true;
     }
 }
