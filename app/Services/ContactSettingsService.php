@@ -65,7 +65,7 @@ class ContactSettingsService
                 }
 
                 return [
-                    'iconKey' => (string) ($row['iconKey'] ?? 'phone'),
+                    'iconKey' => $this->normalizeIconKey($row['iconKey'] ?? $row['icon_key'] ?? $row['icon'] ?? null),
                     'label' => (string) ($row['label'] ?? ''),
                     'value' => (string) ($row['value'] ?? ''),
                     'href' => isset($row['href']) && $row['href'] !== '' ? (string) $row['href'] : null,
@@ -91,6 +91,24 @@ class ContactSettingsService
                 ];
             }, $offices)),
         ];
+    }
+
+    private function normalizeIconKey(mixed $raw): string
+    {
+        if (! is_string($raw)) {
+            return 'phone';
+        }
+
+        $key = str_replace('_', '-', strtolower(trim($raw)));
+
+        return match ($key) {
+            'mail', 'email' => 'mail',
+            'map-pin', 'mappin', 'address' => 'map-pin',
+            'clock', 'time' => 'clock',
+            'link', 'external-link' => 'link',
+            'phone' => 'phone',
+            default => 'phone',
+        };
     }
 
     /**

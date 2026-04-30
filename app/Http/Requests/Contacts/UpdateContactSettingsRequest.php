@@ -12,6 +12,30 @@ class UpdateContactSettingsRequest extends FormRequest
         return $this->user() !== null && $this->user()->can('manage contacts');
     }
 
+    protected function prepareForValidation(): void
+    {
+        $quick = $this->input('quick');
+        if (! is_array($quick)) {
+            return;
+        }
+
+        $this->merge([
+            'quick' => array_map(static function ($row) {
+                if (! is_array($row) || isset($row['iconKey'])) {
+                    return $row;
+                }
+
+                if (isset($row['icon_key'])) {
+                    $row['iconKey'] = $row['icon_key'];
+                } elseif (isset($row['icon'])) {
+                    $row['iconKey'] = $row['icon'];
+                }
+
+                return $row;
+            }, $quick),
+        ]);
+    }
+
     /**
      * @return array<string, mixed>
      */
