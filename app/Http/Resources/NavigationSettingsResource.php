@@ -6,18 +6,31 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @property-read array{main: list<array<string, mixed>>, more: list<array<string, mixed>>} $resource
+ * @property-read array<string, mixed> $resource
  */
 class NavigationSettingsResource extends JsonResource
 {
     /**
-     * @return array{main: list<array<string, mixed>>, more: list<array<string, mixed>>}
+     * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        return [
-            'main' => $this->resource['main'],
-            'more' => $this->resource['more'],
+        $r = $this->resource;
+        $out = [
+            'main' => $r['main'],
+            'more' => $r['more'],
+            'menuVariant' => $r['menuVariant'],
+            'menuFontSize' => $r['menuFontSize'],
+            'menuFontWeight' => $r['menuFontWeight'],
+            'menuTextCase' => $r['menuTextCase'],
+            'menuJustify' => $r['menuJustify'],
         ];
+        foreach (['menuItemHoverColor', 'menuItemColor', 'horizItems', 'burgerContacts'] as $key) {
+            if (array_key_exists($key, $r)) {
+                $out[$key] = $r[$key];
+            }
+        }
+
+        return $out;
     }
 }

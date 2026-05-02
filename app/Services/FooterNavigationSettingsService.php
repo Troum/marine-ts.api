@@ -14,7 +14,12 @@ class FooterNavigationSettingsService
     ) {}
 
     /**
-     * @return array{columns: list<array<string, mixed>>, legal: list<array<string, mixed>>}
+     * @return array{
+     *     columns: list<array<string, mixed>>,
+     *     legal: list<array<string, mixed>>,
+     *     hideFooterGlobally: bool,
+     *     hideFooterPaths: list<string>,
+     * }
      */
     public function getFooterNavigation(): array
     {
@@ -27,13 +32,20 @@ class FooterNavigationSettingsService
     }
 
     /**
-     * @return array{columns: list<array<string, mixed>>, legal: list<array<string, mixed>>}
+     * @return array{
+     *     columns: list<array<string, mixed>>,
+     *     legal: list<array<string, mixed>>,
+     *     hideFooterGlobally: bool,
+     *     hideFooterPaths: list<string>,
+     * }
      */
     public function updateFooterNavigation(UpdateFooterNavigationSettingsDto $dto): array
     {
         $normalized = $this->normalize([
             'columns' => $dto->columns,
             'legal' => $dto->legal,
+            'hideFooterGlobally' => $dto->hideFooterGlobally,
+            'hideFooterPaths' => $dto->hideFooterPaths,
         ]);
         $this->siteSettingRepository->updateOrCreateValue(self::KEY, $normalized);
 
@@ -42,7 +54,12 @@ class FooterNavigationSettingsService
 
     /**
      * @param  array<string, mixed>  $value
-     * @return array{columns: list<array<string, mixed>>, legal: list<array<string, mixed>>}
+     * @return array{
+     *     columns: list<array<string, mixed>>,
+     *     legal: list<array<string, mixed>>,
+     *     hideFooterGlobally: bool,
+     *     hideFooterPaths: list<string>,
+     * }
      */
     public function normalize(array $value): array
     {
@@ -69,10 +86,41 @@ class FooterNavigationSettingsService
             $legalOut[] = $this->normalizeLink(is_array($row) ? $row : [], $defaults['legal'][$i] ?? null);
         }
 
+        $hideGlobal = filter_var(
+            $value['hideFooterGlobally'] ?? $value['hide_footer_globally'] ?? false,
+            FILTER_VALIDATE_BOOL,
+        );
+
         return [
             'columns' => $outColumns,
             'legal' => $legalOut,
+            'hideFooterGlobally' => $hideGlobal,
+            'hideFooterPaths' => $this->normalizeHideFooterPaths($value['hideFooterPaths'] ?? $value['hide_footer_paths'] ?? []),
         ];
+    }
+
+    /**
+     * @param  mixed  $raw
+     * @return list<string>
+     */
+    private function normalizeHideFooterPaths(mixed $raw): array
+    {
+        if (! is_array($raw)) {
+            return [];
+        }
+        $paths = [];
+        foreach ($raw as $p) {
+            if (! is_string($p)) {
+                continue;
+            }
+            $t = trim($p);
+            if ($t === '') {
+                continue;
+            }
+            $paths[] = str_starts_with($t, '/') ? $t : '/'.$t;
+        }
+
+        return array_values(array_unique($paths));
     }
 
     /**
@@ -141,7 +189,12 @@ class FooterNavigationSettingsService
     }
 
     /**
-     * @return array{columns: list<array<string, mixed>>, legal: list<array<string, mixed>>}
+     * @return array{
+     *     columns: list<array<string, mixed>>,
+     *     legal: list<array<string, mixed>>,
+     *     hideFooterGlobally: bool,
+     *     hideFooterPaths: list<string>,
+     * }
      */
     public function defaultFooterNavigation(): array
     {
@@ -174,6 +227,8 @@ class FooterNavigationSettingsService
                 ['path' => '/privacy', 'label' => ['ru' => 'ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ', 'en' => 'PRIVACY POLICY']],
                 ['path' => '/terms', 'label' => ['ru' => 'УСЛОВИЯ ИСПОЛЬЗОВАНИЯ', 'en' => 'TERMS OF USE']],
             ],
+            'hideFooterGlobally' => false,
+            'hideFooterPaths' => [],
         ];
     }
 }

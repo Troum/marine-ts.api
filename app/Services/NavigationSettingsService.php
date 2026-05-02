@@ -14,7 +14,7 @@ class NavigationSettingsService
     ) {}
 
     /**
-     * @return array{main: list<array<string, mixed>>, more: list<array<string, mixed>>}
+     * @return array<string, mixed>
      */
     public function getNavigation(): array
     {
@@ -27,13 +27,22 @@ class NavigationSettingsService
     }
 
     /**
-     * @return array{main: list<array<string, mixed>>, more: list<array<string, mixed>>}
+     * @return array<string, mixed>
      */
     public function updateNavigation(UpdateNavigationSettingsDto $dto): array
     {
         $normalized = $this->normalize([
             'main' => $dto->main,
             'more' => $dto->more,
+            'menuVariant' => $dto->menuVariant,
+            'menuFontSize' => $dto->menuFontSize,
+            'menuFontWeight' => $dto->menuFontWeight,
+            'menuTextCase' => $dto->menuTextCase,
+            'menuJustify' => $dto->menuJustify,
+            'menuItemHoverColor' => $dto->menuItemHoverColor,
+            'menuItemColor' => $dto->menuItemColor,
+            'horizItems' => $dto->horizItems,
+            'burgerContacts' => $dto->burgerContacts,
         ]);
         $this->siteSettingRepository->updateOrCreateValue(self::KEY, $normalized);
 
@@ -42,7 +51,7 @@ class NavigationSettingsService
 
     /**
      * @param  array<string, mixed>  $value
-     * @return array{main: list<array<string, mixed>>, more: list<array<string, mixed>>}
+     * @return array<string, mixed>
      */
     public function normalize(array $value): array
     {
@@ -59,7 +68,239 @@ class NavigationSettingsService
         return [
             'main' => array_values(array_map(fn ($row) => $this->normalizeItem($row), $main)),
             'more' => array_values(array_map(fn ($row) => $this->normalizeItem($row), $more)),
-        ];
+            'menuVariant' => $this->normalizeMenuVariant($value['menuVariant'] ?? $value['menu_variant'] ?? null),
+            'menuFontSize' => $this->normalizeMenuFontSize($value['menuFontSize'] ?? $value['menu_font_size'] ?? null),
+            'menuFontWeight' => $this->normalizeMenuFontWeight($value['menuFontWeight'] ?? $value['menu_font_weight'] ?? null),
+            'menuTextCase' => $this->normalizeMenuTextCase($value['menuTextCase'] ?? $value['menu_text_case'] ?? null),
+            'menuJustify' => $this->normalizeMenuJustify($value['menuJustify'] ?? $value['menu_justify'] ?? null),
+        ] + $this->normalizeOptionalExtras($value);
+    }
+
+    /**
+     * @param  array<string, mixed>  $value
+     * @return array<string, mixed>
+     */
+    private function normalizeOptionalExtras(array $value): array
+    {
+        $out = [];
+        $hover = $this->normalizeOptionalColor($value['menuItemHoverColor'] ?? $value['menu_item_hover_color'] ?? null);
+        if ($hover !== null) {
+            $out['menuItemHoverColor'] = $hover;
+        }
+        $color = $this->normalizeOptionalColor($value['menuItemColor'] ?? $value['menu_item_color'] ?? null);
+        if ($color !== null) {
+            $out['menuItemColor'] = $color;
+        }
+        $horizRaw = $value['horizItems'] ?? $value['horiz_items'] ?? null;
+        if (is_array($horizRaw) && $horizRaw !== []) {
+            $horiz = array_values(array_map(fn ($row) => $this->normalizeItem($row), $horizRaw));
+            if ($horiz !== []) {
+                $out['horizItems'] = $horiz;
+            }
+        }
+        $bc = $this->normalizeBurgerContacts($value['burgerContacts'] ?? $value['burger_contacts'] ?? null);
+        if ($bc !== null) {
+            $out['burgerContacts'] = $bc;
+        }
+
+        return $out;
+    }
+
+    private function normalizeOptionalColor(mixed $raw): ?string
+    {
+        if (! is_string($raw)) {
+            return null;
+        }
+        $s = trim($raw);
+        if ($s === '' || strlen($s) > 32) {
+            return null;
+        }
+
+        return $s;
+    }
+
+    /**
+     * Значения из вложенного burgerContacts: фронт шлёт camelCase, DTO может отдать snake_case.
+     *
+     * @param  array<string, mixed>  $assoc
+     */
+    private function burgerAssocString(array $assoc, string $camel, string $snake): ?string
+    {
+        foreach ([$camel, $snake] as $key) {
+            if (! array_key_exists($key, $assoc)) {
+                continue;
+            }
+            $v = $assoc[$key];
+            if ($v === null) {
+                continue;
+            }
+            if (is_string($v)) {
+                $t = trim($v);
+            } elseif (is_int($v) || is_float($v)) {
+                $t = trim((string) $v);
+            } else {
+                continue;
+            }
+            if ($t !== '') {
+                return $t;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function normalizeBurgerContacts(mixed $raw): ?array
+    {
+        if (! is_array($raw)) {
+            return null;
+        }
+        $out = [];
+        $phonesTitle = $this->burgerAssocString($raw, 'phonesTitle', 'phones_title');
+        if ($phonesTitle !== null) {
+            $out['phonesTitle'] = $phonesTitle;
+        }
+        if (isset($raw['phones']) && is_array($raw['phones'])) {
+            $phones = [];
+            foreach ($raw['phones'] as $p) {
+                $s = trim((string) $p);
+                if ($s !== '') {
+                    $phones[] = $s;
+                }
+            }
+            if ($phones !== []) {
+                $out['phones'] = $phones;
+            }
+        }
+        $emailTitle = $this->burgerAssocString($raw, 'emailTitle', 'email_title');
+        if ($emailTitle !== null) {
+            $out['emailTitle'] = $emailTitle;
+        }
+
+        $emails = [];
+        if (isset($raw['emails']) && is_array($raw['emails'])) {
+            foreach ($raw['emails'] as $e) {
+                $s = trim((string) $e);
+                if ($s !== '') {
+                    $emails[] = $s;
+                }
+            }
+        }
+        if ($emails === []) {
+            $legacyEmail = $this->burgerAssocString($raw, 'email', 'email');
+            if ($legacyEmail !== null) {
+                $emails = [$legacyEmail];
+            }
+        }
+        if ($emails !== []) {
+            $out['emails'] = $emails;
+        }
+
+        $socials = [];
+        if (isset($raw['socials']) && is_array($raw['socials'])) {
+            foreach ($raw['socials'] as $soc) {
+                if (! is_array($soc)) {
+                    continue;
+                }
+                $url = $this->burgerAssocString($soc, 'url', 'url');
+                if ($url === null) {
+                    continue;
+                }
+                $label = $this->burgerAssocString($soc, 'label', 'label') ?? $url;
+                $socials[] = ['url' => $url, 'label' => $label];
+            }
+        }
+        if ($socials === []) {
+            $url = $this->burgerAssocString($raw, 'socialUrl', 'social_url');
+            if ($url !== null) {
+                $label = $this->burgerAssocString($raw, 'socialLabel', 'social_label') ?? $url;
+                $socials[] = ['url' => $url, 'label' => $label];
+            }
+        }
+        if ($socials !== []) {
+            $out['socials'] = $socials;
+        }
+
+        $officesColumnTitle = $this->burgerAssocString($raw, 'officesColumnTitle', 'offices_column_title');
+        if ($officesColumnTitle !== null) {
+            $out['officesColumnTitle'] = $officesColumnTitle;
+        }
+
+        $offices = [];
+        if (isset($raw['offices']) && is_array($raw['offices'])) {
+            foreach ($raw['offices'] as $of) {
+                if (! is_array($of)) {
+                    continue;
+                }
+                $addr = $this->burgerAssocString($of, 'address', 'address');
+                if ($addr === null) {
+                    continue;
+                }
+                $entry = ['address' => $addr];
+                $otitle = $this->burgerAssocString($of, 'title', 'title');
+                if ($otitle !== null) {
+                    $entry['title'] = $otitle;
+                }
+                $offices[] = $entry;
+            }
+        }
+        if ($offices === []) {
+            $legacyAddr = $this->burgerAssocString($raw, 'officeAddress', 'office_address');
+            if ($legacyAddr !== null) {
+                $offices[] = ['address' => $legacyAddr];
+                if (! isset($out['officesColumnTitle'])) {
+                    $legacyOfficeTitle = $this->burgerAssocString($raw, 'officeTitle', 'office_title');
+                    if ($legacyOfficeTitle !== null) {
+                        $out['officesColumnTitle'] = $legacyOfficeTitle;
+                    }
+                }
+            }
+        }
+        if ($offices !== []) {
+            $out['offices'] = $offices;
+        }
+
+        return $out === [] ? null : $out;
+    }
+
+    private function normalizeMenuVariant(mixed $raw): string
+    {
+        $v = is_string($raw) ? strtolower(trim($raw)) : '';
+
+        return $v === 'horizontal' ? 'horizontal' : 'overlay';
+    }
+
+    private function normalizeMenuFontSize(mixed $raw): string
+    {
+        $v = is_string($raw) ? strtolower(trim($raw)) : '';
+        $allowed = ['sm', 'base', 'lg', 'xl', '2xl'];
+
+        return in_array($v, $allowed, true) ? $v : 'base';
+    }
+
+    private function normalizeMenuFontWeight(mixed $raw): string
+    {
+        $v = is_string($raw) ? strtolower(trim($raw)) : '';
+        $allowed = ['light', 'normal', 'medium', 'semibold', 'bold'];
+
+        return in_array($v, $allowed, true) ? $v : 'medium';
+    }
+
+    private function normalizeMenuTextCase(mixed $raw): string
+    {
+        $v = is_string($raw) ? strtolower(trim($raw)) : '';
+        $allowed = ['none', 'lowercase', 'uppercase', 'capitalize'];
+
+        return in_array($v, $allowed, true) ? $v : 'none';
+    }
+
+    private function normalizeMenuJustify(mixed $raw): string
+    {
+        $v = is_string($raw) ? strtolower(trim($raw)) : '';
+
+        return $v === 'center' ? 'center' : 'between';
     }
 
     /**
@@ -113,13 +354,26 @@ class NavigationSettingsService
     }
 
     /**
-     * @return array{main: list<array<string, mixed>>, more: list<array<string, mixed>>}
+     * @return array{
+     *     main: list<array<string, mixed>>,
+     *     more: list<array<string, mixed>>,
+     *     menuVariant: string,
+     *     menuFontSize: string,
+     *     menuFontWeight: string,
+     *     menuTextCase: string,
+     *     menuJustify: string,
+     * }
      */
     public function defaultNavigation(): array
     {
         return [
             'main' => [],
             'more' => [],
+            'menuVariant' => 'overlay',
+            'menuFontSize' => 'base',
+            'menuFontWeight' => 'medium',
+            'menuTextCase' => 'none',
+            'menuJustify' => 'between',
         ];
     }
 }

@@ -30,6 +30,7 @@ class ContactSettingsService
     {
         $normalized = $this->normalize([
             'quick' => $dto->quick,
+            'departments' => $dto->departments,
             'offices' => $dto->offices,
         ]);
         $this->siteSettingRepository->updateOrCreateValue(self::KEY, $normalized);
@@ -45,9 +46,13 @@ class ContactSettingsService
     {
         $defaults = $this->defaultContacts();
         $quick = $value['quick'] ?? $defaults['quick'];
+        $departments = $value['departments'] ?? $defaults['departments'];
         $offices = $value['offices'] ?? $defaults['offices'];
         if (! is_array($quick)) {
             $quick = $defaults['quick'];
+        }
+        if (! is_array($departments)) {
+            $departments = $defaults['departments'];
         }
         if (! is_array($offices)) {
             $offices = $defaults['offices'];
@@ -69,8 +74,26 @@ class ContactSettingsService
                     'label' => (string) ($row['label'] ?? ''),
                     'value' => (string) ($row['value'] ?? ''),
                     'href' => isset($row['href']) && $row['href'] !== '' ? (string) $row['href'] : null,
+                    'showInFooter' => $this->boolValue($row['showInFooter'] ?? $row['show_in_footer'] ?? true),
                 ];
             }, $quick)),
+            'departments' => array_values(array_map(function ($row) {
+                if (! is_array($row)) {
+                    return [
+                        'title' => '',
+                        'phone' => '',
+                        'email' => '',
+                        'showInFooter' => false,
+                    ];
+                }
+
+                return [
+                    'title' => (string) ($row['title'] ?? ''),
+                    'phone' => (string) ($row['phone'] ?? ''),
+                    'email' => (string) ($row['email'] ?? ''),
+                    'showInFooter' => $this->boolValue($row['showInFooter'] ?? $row['show_in_footer'] ?? false),
+                ];
+            }, $departments)),
             'offices' => array_values(array_map(function ($row) {
                 if (! is_array($row)) {
                     return [
@@ -106,9 +129,17 @@ class ContactSettingsService
             'map-pin', 'mappin', 'address' => 'map-pin',
             'clock', 'time' => 'clock',
             'link', 'external-link' => 'link',
+            'linkedin', 'linked-in' => 'linkedin',
+            'vk', 'vkontakte' => 'vk',
+            'max' => 'max',
             'phone' => 'phone',
             default => 'phone',
         };
+    }
+
+    private function boolValue(mixed $raw): bool
+    {
+        return filter_var($raw, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
     }
 
     /**
@@ -118,11 +149,17 @@ class ContactSettingsService
     {
         return [
             'quick' => [
-                ['iconKey' => 'phone', 'label' => 'Телефон', 'value' => '8 (4012) 35-52-90', 'href' => 'tel:84012355290'],
-                ['iconKey' => 'mail', 'label' => 'Email', 'value' => 'info@marine-ts.com', 'href' => 'mailto:info@marine-ts.com'],
-                ['iconKey' => 'map-pin', 'label' => 'Адрес', 'value' => 'г. Калининград, Россия', 'href' => null],
-                ['iconKey' => 'clock', 'label' => 'Режим работы', 'value' => 'Пн-Пт: 9:00 - 18:00', 'href' => null],
-                ['iconKey' => 'link', 'label' => 'Соцсеть', 'value' => 'vk.com/marine_ts', 'href' => 'https://vk.com/marine_ts'],
+                ['iconKey' => 'phone', 'label' => 'Телефон', 'value' => '8 (4012) 35-52-90', 'href' => 'tel:84012355290', 'showInFooter' => true],
+                ['iconKey' => 'mail', 'label' => 'Email', 'value' => 'info@marine-ts.com', 'href' => 'mailto:info@marine-ts.com', 'showInFooter' => true],
+                ['iconKey' => 'map-pin', 'label' => 'Адрес', 'value' => 'г. Калининград, Россия', 'href' => null, 'showInFooter' => true],
+                ['iconKey' => 'clock', 'label' => 'Режим работы', 'value' => 'Пн-Пт: 9:00 - 18:00', 'href' => null, 'showInFooter' => false],
+                ['iconKey' => 'link', 'label' => 'Соцсеть', 'value' => 'vk.com/marine_ts', 'href' => 'https://vk.com/marine_ts', 'showInFooter' => false],
+            ],
+            'departments' => [
+                ['title' => 'Отдел судового менеджмента', 'phone' => '8 4012 35 52 90 (доб 1)', 'email' => 'sblokhin@marin-ts.com', 'showInFooter' => false],
+                ['title' => 'Отдел крюинга', 'phone' => '8 4012 35 52 90 (доб 4)', 'email' => 'cv@marin-ts.com', 'showInFooter' => false],
+                ['title' => 'Отдел снабжения', 'phone' => '8 4012 35 52 90 (доб 2)', 'email' => 'snabzheniye@marin-ts.com', 'showInFooter' => false],
+                ['title' => 'Отдел судоремонта', 'phone' => '8 4012 35 52 90 (доб 3)', 'email' => 'tech2@marin-ts.com', 'showInFooter' => false],
             ],
             'offices' => [
                 [

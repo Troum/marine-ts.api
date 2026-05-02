@@ -33,6 +33,10 @@ class UpdateFooterNavigationSettingsRequest extends FormRequest
             'legal.*.label' => ['required', 'array'],
             'legal.*.label.ru' => ['required', 'string', 'max:120'],
             'legal.*.label.en' => ['required', 'string', 'max:120'],
+
+            'hideFooterGlobally' => ['sometimes', 'boolean'],
+            'hideFooterPaths' => ['sometimes', 'array', 'max:50'],
+            'hideFooterPaths.*' => ['string', 'max:200'],
         ];
     }
 
