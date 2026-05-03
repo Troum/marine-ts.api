@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\ApplicationFormController;
 use App\Http\Controllers\Api\ApplicationFormDocumentUploadController;
 use App\Http\Controllers\Api\ApplicationFormSupplementaryDownloadController;
+use App\Http\Controllers\Api\AppearanceSettingsController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContactSettingsController;
 use App\Http\Controllers\Api\ContentPageController;
@@ -67,6 +68,7 @@ Route::get('/gallery', [GalleryItemController::class, 'index']);
 Route::get('/contact-settings', [ContactSettingsController::class, 'show']);
 
 Route::get('/navigation-settings', [NavigationSettingsController::class, 'show']);
+Route::get('/appearance-settings', [AppearanceSettingsController::class, 'show']);
 Route::get('/footer-navigation-settings', [FooterNavigationSettingsController::class, 'show']);
 
 Route::get('/content-pages', [ContentPageController::class, 'publicIndex']);
@@ -121,6 +123,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/contact-settings', [ContactSettingsController::class, 'update']);
 
     Route::put('/navigation-settings', [NavigationSettingsController::class, 'update']);
+    Route::put('/appearance-settings', [AppearanceSettingsController::class, 'update']);
     Route::put('/footer-navigation-settings', [FooterNavigationSettingsController::class, 'update']);
 
     Route::get('/analytics/manage/summary', [AnalyticsController::class, 'manageSummary']);
