@@ -4,8 +4,10 @@ namespace App\Repositories;
 
 use App\Contracts\Repositories\PublicMediaStorageRepositoryInterface;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 final class PublicMediaStorageRepository implements PublicMediaStorageRepositoryInterface
 {
@@ -13,12 +15,42 @@ final class PublicMediaStorageRepository implements PublicMediaStorageRepository
 
     public function storePublicMedia(UploadedFile $file): string
     {
-        $ext = $file->getClientOriginalExtension();
-        $name = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+        $ext = strtolower((string) $file->getClientOriginalExtension());
+        $name = Str::slug((string) pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+        if ($name === '') {
+            $name = 'media';
+        }
+        if ($ext === '') {
+            $ext = strtolower((string) $file->extension());
+        }
+        if ($ext === '') {
+            throw new RuntimeException('Unable to detect uploaded file extension.');
+        }
+
         $filename = $name.'-'.Str::random(8).'.'.$ext;
         $path = $file->storeAs('media', $filename, 'public');
 
-        return Storage::disk('public')->url($path);
+        if (! is_string($path) || $path === '') {
+            Log::error('Public media upload failed: empty storage path returned.', [
+                'filename' => $filename,
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getClientMimeType(),
+                'size' => $file->getSize(),
+            ]);
+            throw new RuntimeException('Failed to store uploaded file in public disk.');
+        }
+
+        $url = Storage::disk('public')->url($path);
+        if ($url === '' || Str::endsWith($url, '/storage')) {
+            Log::error('Public media upload produced invalid URL.', [
+                'path' => $path,
+                'url' => $url,
+                'filename' => $filename,
+            ]);
+            throw new RuntimeException('Failed to resolve public URL for uploaded file.');
+        }
+
+        return $url;
     }
 
     public function listPublicMediaImages(): array
