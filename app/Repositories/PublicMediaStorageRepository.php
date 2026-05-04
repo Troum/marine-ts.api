@@ -28,7 +28,17 @@ final class PublicMediaStorageRepository implements PublicMediaStorageRepository
         }
 
         $filename = $name.'-'.Str::random(8).'.'.$ext;
-        $path = $file->storeAs('media', $filename, 'public');
+        $disk = Storage::disk('public');
+
+        if (! $disk->directoryExists('media') && ! $disk->makeDirectory('media')) {
+            Log::error('Public media upload failed: unable to create media directory.', [
+                'disk' => 'public',
+                'filename' => $filename,
+            ]);
+            throw new RuntimeException('Failed to create media directory in public disk.');
+        }
+
+        $path = $disk->putFileAs('media', $file, $filename);
 
         if (! is_string($path) || $path === '') {
             Log::error('Public media upload failed: empty storage path returned.', [
@@ -36,11 +46,13 @@ final class PublicMediaStorageRepository implements PublicMediaStorageRepository
                 'original_name' => $file->getClientOriginalName(),
                 'mime_type' => $file->getClientMimeType(),
                 'size' => $file->getSize(),
+                'tmp_path' => $file->getRealPath(),
+                'target_dir' => 'media',
             ]);
             throw new RuntimeException('Failed to store uploaded file in public disk.');
         }
 
-        $url = Storage::disk('public')->url($path);
+        $url = $disk->url($path);
         if ($url === '' || Str::endsWith($url, '/storage')) {
             Log::error('Public media upload produced invalid URL.', [
                 'path' => $path,
