@@ -23,8 +23,7 @@ final class StorePageInquiryDto extends BaseDto
     public readonly string $email;
 
     /**
-     * Машинно-читаемые id типов судна (sukhogruz, tanker, container, ...),
-     * перечень синхронизирован с фронтом (`PageInquiryForm.vue`).
+     * Машинно-читаемые id выбранных типов судна (набор настраивается в CMS).
      *
      * @var list<string>
      */
@@ -41,7 +40,7 @@ final class StorePageInquiryDto extends BaseDto
     public readonly ?string $main_ports;
 
     /**
-     * Машинно-читаемые id требуемых услуг (technical, crewing, audit, ...).
+     * Машинно-читаемые id выбранных услуг (набор настраивается в CMS).
      *
      * @var list<string>
      */

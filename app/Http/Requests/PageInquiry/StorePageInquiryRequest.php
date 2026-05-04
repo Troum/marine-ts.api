@@ -6,33 +6,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StorePageInquiryRequest extends FormRequest
 {
-    /**
-     * Допустимые id типов судна. Должен совпадать с константой `VESSEL_TYPES`
-     * во фронте (`app/app/components/common/PageInquiryForm.vue`). Если
-     * добавляешь новый id — обнови оба места.
-     */
-    private const ALLOWED_VESSEL_TYPES = [
-        'dry_cargo',
-        'tanker',
-        'container',
-        'tug',
-        'service',
-        'other',
-    ];
-
-    /**
-     * Допустимые id требуемых услуг. Должен совпадать с константой
-     * `REQUIRED_SERVICES` во фронте.
-     */
-    private const ALLOWED_REQUIRED_SERVICES = [
-        'technical',
-        'crewing',
-        'audit',
-        'commercial',
-        'insurance',
-        'other',
-    ];
-
     public function authorize(): bool
     {
         return true;
@@ -50,15 +23,15 @@ class StorePageInquiryRequest extends FormRequest
             'phone' => ['required', 'string', 'max:64'],
             'email' => ['required', 'string', 'email', 'max:255'],
 
-            'vessel_types' => ['required', 'array', 'min:1'],
-            'vessel_types.*' => ['string', 'in:'.implode(',', self::ALLOWED_VESSEL_TYPES)],
+            'vessel_types' => ['required', 'array', 'min:1', 'max:50'],
+            'vessel_types.*' => ['string', 'max:64', 'regex:/^[a-z0-9_-]+$/i', 'distinct'],
 
             'vessels_count' => ['required', 'integer', 'min:1', 'max:100000'],
             'vessel_flag' => ['required', 'string', 'max:255'],
             'main_ports' => ['nullable', 'string', 'max:1000'],
 
-            'required_services' => ['required', 'array', 'min:1'],
-            'required_services.*' => ['string', 'in:'.implode(',', self::ALLOWED_REQUIRED_SERVICES)],
+            'required_services' => ['required', 'array', 'min:1', 'max:50'],
+            'required_services.*' => ['string', 'max:64', 'regex:/^[a-z0-9_-]+$/i', 'distinct'],
 
             'message' => ['nullable', 'string', 'max:10000'],
             'source_page' => ['required', 'string', 'max:255'],
