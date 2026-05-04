@@ -31,7 +31,12 @@ class StorePageInquiryRequest extends FormRequest
             'main_ports' => ['nullable', 'string', 'max:1000'],
 
             'required_services' => ['required', 'array', 'min:1', 'max:50'],
-            'required_services.*' => ['string', 'max:64', 'regex:/^[a-z0-9_-]+$/i', 'distinct'],
+            'required_services.*' => ['string', 'max:80', 'regex:/^[a-z0-9_-]+$/i', 'distinct'],
+
+            'vessel_type_labels' => ['nullable', 'array', 'max:50'],
+            'vessel_type_labels.*' => ['string', 'max:255'],
+            'required_service_labels' => ['nullable', 'array', 'max:50'],
+            'required_service_labels.*' => ['string', 'max:255'],
 
             'message' => ['nullable', 'string', 'max:10000'],
             'source_page' => ['required', 'string', 'max:255'],
@@ -49,10 +54,12 @@ class StorePageInquiryRequest extends FormRequest
         $map = [
             'sourcePage' => 'source_page',
             'vesselTypes' => 'vessel_types',
+            'vesselTypeLabels' => 'vessel_type_labels',
             'vesselsCount' => 'vessels_count',
             'vesselFlag' => 'vessel_flag',
             'mainPorts' => 'main_ports',
             'requiredServices' => 'required_services',
+            'requiredServiceLabels' => 'required_service_labels',
         ];
         foreach ($map as $camel => $snake) {
             if ($this->has($camel) && ! $this->has($snake)) {

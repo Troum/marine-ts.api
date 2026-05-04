@@ -19,6 +19,8 @@ class UpdateAppearanceSettingsRequest extends FormRequest
     {
         return [
             'theme' => ['required', 'string', Rule::in(['default', 'scglobal'])],
+            'hiddenSections' => ['nullable', 'array'],
+            'hiddenSections.*' => ['boolean'],
         ];
     }
 }

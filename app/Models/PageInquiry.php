@@ -12,10 +12,12 @@ use Illuminate\Database\Eloquent\Model;
     'phone',
     'email',
     'vessel_types',
+    'vessel_type_labels',
     'vessels_count',
     'vessel_flag',
     'main_ports',
     'required_services',
+    'required_service_labels',
     'message',
     'source_page',
     'ip',
@@ -31,7 +33,9 @@ class PageInquiry extends Model
         return [
             'read_at' => 'datetime',
             'vessel_types' => 'array',
+            'vessel_type_labels' => 'array',
             'required_services' => 'array',
+            'required_service_labels' => 'array',
             'vessels_count' => 'integer',
         ];
     }

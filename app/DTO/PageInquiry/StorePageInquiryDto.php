@@ -30,6 +30,14 @@ final class StorePageInquiryDto extends BaseDto
     #[MapProperty(from: ['vessel_types'], required: true)]
     public readonly array $vessel_types;
 
+    /**
+     * Человекочитаемые подписи для id типов судна: id → label.
+     *
+     * @var array<string, string>|null
+     */
+    #[MapProperty(from: ['vessel_type_labels'], required: false)]
+    public readonly ?array $vessel_type_labels;
+
     #[MapProperty(from: ['vessels_count'], required: true)]
     public readonly int $vessels_count;
 
@@ -46,6 +54,14 @@ final class StorePageInquiryDto extends BaseDto
      */
     #[MapProperty(from: ['required_services'], required: true)]
     public readonly array $required_services;
+
+    /**
+     * Человекочитаемые подписи для id услуг: id → label.
+     *
+     * @var array<string, string>|null
+     */
+    #[MapProperty(from: ['required_service_labels'], required: false)]
+    public readonly ?array $required_service_labels;
 
     #[MapProperty(from: ['message'], required: false)]
     public readonly ?string $message;

@@ -27,11 +27,14 @@ class AppearanceSettingsService
     }
 
     /**
-     * @return array{theme: string}
+     * @return array{theme: string, hiddenSections: array<string, bool>}
      */
     public function updateAppearance(UpdateAppearanceSettingsDto $dto): array
     {
-        $normalized = $this->normalize(['theme' => $dto->theme]);
+        $normalized = $this->normalize([
+            'theme' => $dto->theme,
+            'hiddenSections' => $dto->hiddenSections ?? [],
+        ]);
         $this->siteSettingRepository->updateOrCreateValue(self::KEY, $normalized);
 
         return $normalized;
@@ -39,11 +42,12 @@ class AppearanceSettingsService
 
     /**
      * @param  array<string, mixed>  $value
-     * @return array{theme: string}
+     * @return array{theme: string, hiddenSections: array<string, bool>}
      */
     public function normalize(array $value): array
     {
         $defaults = $this->defaultAppearance();
+
         $theme = $value['theme'] ?? $defaults['theme'];
         if (! is_string($theme)) {
             $theme = $defaults['theme'];
@@ -56,14 +60,24 @@ class AppearanceSettingsService
             $theme = 'default';
         }
 
-        return ['theme' => $theme];
+        $rawHidden = $value['hiddenSections'] ?? [];
+        $hiddenSections = [];
+        if (is_array($rawHidden)) {
+            foreach ($rawHidden as $k => $v) {
+                if (is_string($k) && preg_match('/^[a-z_]{1,64}$/', $k)) {
+                    $hiddenSections[$k] = (bool) $v;
+                }
+            }
+        }
+
+        return ['theme' => $theme, 'hiddenSections' => $hiddenSections];
     }
 
     /**
-     * @return array{theme: string}
+     * @return array{theme: string, hiddenSections: array<string, bool>}
      */
     private function defaultAppearance(): array
     {
-        return ['theme' => 'default'];
+        return ['theme' => 'default', 'hiddenSections' => []];
     }
 }
