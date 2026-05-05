@@ -9,7 +9,7 @@ interface PublicMediaStorageRepositoryInterface
     public function storePublicMedia(UploadedFile $file): string;
 
     /**
-     * Список файлов изображений в каталоге public disk `media/` (не рекурсивно).
+     * Список файлов в каталоге public disk `media/` (не рекурсивно): изображения и видео (mp4, webm, mov).
      *
      * @return list<array{url: string, filename: string, size: int, modified_at: string}>
      */

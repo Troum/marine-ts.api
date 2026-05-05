@@ -13,6 +13,9 @@ final class PublicMediaStorageRepository implements PublicMediaStorageRepository
 {
     private const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
 
+    /** Видео для фонов hero и т.п. (тот же каталог `storage/media`). */
+    private const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov'];
+
     public function storePublicMedia(UploadedFile $file): string
     {
         $ext = strtolower((string) $file->getClientOriginalExtension());
@@ -76,7 +79,7 @@ final class PublicMediaStorageRepository implements PublicMediaStorageRepository
         $items = [];
         foreach ($disk->files('media') as $path) {
             $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-            if (! in_array($ext, self::IMAGE_EXTENSIONS, true)) {
+            if (! in_array($ext, self::IMAGE_EXTENSIONS, true) && ! in_array($ext, self::VIDEO_EXTENSIONS, true)) {
                 continue;
             }
             $items[] = [

@@ -17,7 +17,8 @@ class StoreMediaUploadRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png,webp'],
+            // KB; видео для hero допускает до ~80 MiB (проверьте PHP upload_max_filesize / post_max_size).
+            'file' => ['required', 'file', 'max:81920', 'mimes:pdf,jpg,jpeg,png,webp,mp4,webm,mov,quicktime'],
         ];
     }
 }

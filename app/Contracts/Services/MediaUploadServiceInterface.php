@@ -13,6 +13,7 @@ interface MediaUploadServiceInterface
 
     /**
      * @return list<array{url: string, filename: string, size: int, modified_at: string}>
+     *         Изображения и видео из public/storage/media.
      */
     public function listPublicImages(): array;
 }
