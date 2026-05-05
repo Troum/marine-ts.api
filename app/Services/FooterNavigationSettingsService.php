@@ -74,10 +74,10 @@ class FooterNavigationSettingsService
         }
 
         $outColumns = [];
-        for ($i = 0; $i < 3; $i++) {
-            $col = is_array($columns[$i] ?? null) ? $columns[$i] : [];
+        $columns = array_values(is_array($columns) ? $columns : []);
+        foreach ($columns as $i => $col) {
             $defCol = $defaults['columns'][$i] ?? ['title' => ['ru' => '', 'en' => ''], 'links' => []];
-            $outColumns[] = $this->normalizeColumn($col, $defCol);
+            $outColumns[] = $this->normalizeColumn(is_array($col) ? $col : [], $defCol);
         }
 
         $legalOut = [];
@@ -126,10 +126,11 @@ class FooterNavigationSettingsService
     /**
      * @param  array<string, mixed>  $col
      * @param  array<string, mixed>  $defaultCol
-     * @return array{title: array{ru: string, en: string}, links: list<array<string, mixed>>}
+     * @return array{title: array{ru: string, en: string}, links: list<array<string, mixed>>, hidden: bool}
      */
     private function normalizeColumn(array $col, array $defaultCol): array
     {
+        $hidden = filter_var($col['hidden'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $title = $col['title'] ?? [];
         $defTitle = $defaultCol['title'] ?? ['ru' => '', 'en' => ''];
         $titleRu = is_array($title) ? (string) ($title['ru'] ?? $defTitle['ru'] ?? '') : (string) ($defTitle['ru'] ?? '');
@@ -145,6 +146,7 @@ class FooterNavigationSettingsService
         return [
             'title' => ['ru' => $titleRu, 'en' => $titleEn],
             'links' => array_values($links),
+            'hidden' => $hidden,
         ];
     }
 
@@ -213,6 +215,7 @@ class FooterNavigationSettingsService
                         ['path' => '/services', 'label' => ['ru' => 'Сервисы', 'en' => 'Services']],
                         ['path' => '/ship-management', 'label' => ['ru' => 'Судовой менеджмент', 'en' => 'Ship management']],
                         ['path' => '/crewing-management', 'label' => ['ru' => 'Крюинг-менеджмент', 'en' => 'Crew management']],
+                        ['path' => '/lnk', 'label' => ['ru' => 'ЛНК', 'en' => 'LNK']],
                     ],
                 ],
                 [

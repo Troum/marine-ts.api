@@ -20,6 +20,7 @@ class ContactSettingsResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'socials' => $this->resource['socials'] ?? [],
             'quick' => $this->resource['quick'],
             'departments' => $this->resource['departments'],
             'offices' => $this->resource['offices'],

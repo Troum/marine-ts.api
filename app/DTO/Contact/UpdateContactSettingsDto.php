@@ -26,4 +26,11 @@ final class UpdateContactSettingsDto extends BaseDto
      */
     #[MapProperty(from: ['offices'], required: true)]
     public readonly array $offices;
+
+    /**
+     * @var list<array{iconKey: string, url: string}>|null
+     */
+    #[MapProperty(from: ['socials'], required: false)]
+    #[DefaultValue(null)]
+    public readonly ?array $socials;
 }

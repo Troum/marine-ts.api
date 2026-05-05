@@ -54,6 +54,7 @@ class IndexContentPagesRequest extends FormRequest
             'privacy',
             'vacancies-page',
             'ship-management',
+            'lnk',
         ];
 
         return new PaginatedTableRequestDto(

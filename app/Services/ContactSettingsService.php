@@ -32,6 +32,7 @@ class ContactSettingsService
             'quick' => $dto->quick,
             'departments' => $dto->departments,
             'offices' => $dto->offices,
+            'socials' => $dto->socials,
         ]);
         $this->siteSettingRepository->updateOrCreateValue(self::KEY, $normalized);
 
@@ -48,6 +49,7 @@ class ContactSettingsService
         $quick = $value['quick'] ?? $defaults['quick'];
         $departments = $value['departments'] ?? $defaults['departments'];
         $offices = $value['offices'] ?? $defaults['offices'];
+        $socialsRaw = $value['socials'] ?? null;
         if (! is_array($quick)) {
             $quick = $defaults['quick'];
         }
@@ -58,7 +60,23 @@ class ContactSettingsService
             $offices = $defaults['offices'];
         }
 
+        $socials = [];
+        if (is_array($socialsRaw)) {
+            foreach ($socialsRaw as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $iconKey = trim((string) ($row['iconKey'] ?? $row['icon_key'] ?? ''));
+                $url = trim((string) ($row['url'] ?? ''));
+                if ($iconKey === '' || $url === '') {
+                    continue;
+                }
+                $socials[] = ['iconKey' => $iconKey, 'url' => $url];
+            }
+        }
+
         return [
+            'socials' => $socials,
             'quick' => array_values(array_map(function ($row) {
                 if (! is_array($row)) {
                     return [

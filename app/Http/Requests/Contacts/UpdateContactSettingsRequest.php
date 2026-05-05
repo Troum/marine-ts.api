@@ -67,6 +67,10 @@ class UpdateContactSettingsRequest extends FormRequest
             'quick.*.href' => ['nullable', 'string', 'max:500'],
             'quick.*.showInFooter' => ['sometimes', 'boolean'],
 
+            'socials' => ['sometimes', 'nullable', 'array', 'max:20'],
+            'socials.*.iconKey' => ['required', 'string', 'max:40'],
+            'socials.*.url' => ['required', 'string', 'max:500'],
+
             'departments' => ['sometimes', 'array', 'max:30'],
             'departments.*.title' => ['required', 'string', 'max:160'],
             'departments.*.phone' => ['required', 'string', 'max:120'],
