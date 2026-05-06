@@ -7,6 +7,44 @@ use Illuminate\Validation\Rule;
 
 class UpdateContactSettingsRequest extends FormRequest
 {
+    /**
+     * @param  \Closure(string): void  $fail
+     */
+    private static function validateLocalizedLine(string $attribute, mixed $value, \Closure $fail, int $max, bool $requireNonEmpty): void
+    {
+        if (is_string($value)) {
+            if (strlen($value) > $max) {
+                $fail(__('validation.max.string', ['attribute' => $attribute, 'max' => $max]));
+
+                return;
+            }
+            if ($requireNonEmpty && trim($value) === '') {
+                $fail(__('validation.required', ['attribute' => $attribute]));
+            }
+
+            return;
+        }
+
+        if (! is_array($value)) {
+            $fail(__('validation.string', ['attribute' => $attribute]));
+
+            return;
+        }
+
+        $ru = isset($value['ru']) && is_string($value['ru']) ? $value['ru'] : '';
+        $en = isset($value['en']) && is_string($value['en']) ? $value['en'] : '';
+
+        if (strlen($ru) > $max || strlen($en) > $max) {
+            $fail(__('validation.max.string', ['attribute' => $attribute, 'max' => $max]));
+
+            return;
+        }
+
+        if ($requireNonEmpty && trim($ru) === '' && trim($en) === '') {
+            $fail(__('validation.required', ['attribute' => $attribute]));
+        }
+    }
+
     public function authorize(): bool
     {
         return $this->user() !== null && $this->user()->can('manage contacts');
@@ -62,8 +100,18 @@ class UpdateContactSettingsRequest extends FormRequest
         return [
             'quick' => ['required', 'array', 'min:1', 'max:20'],
             'quick.*.iconKey' => ['required', 'string', Rule::in(['phone', 'mail', 'map-pin', 'clock', 'link', 'linkedin', 'vk', 'max'])],
-            'quick.*.label' => ['required', 'string', 'max:120'],
-            'quick.*.value' => ['required', 'string', 'max:500'],
+            'quick.*.label' => [
+                'required',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    self::validateLocalizedLine($attribute, $value, $fail, 120, true);
+                },
+            ],
+            'quick.*.value' => [
+                'required',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    self::validateLocalizedLine($attribute, $value, $fail, 500, true);
+                },
+            ],
             'quick.*.href' => ['nullable', 'string', 'max:500'],
             'quick.*.showInFooter' => ['sometimes', 'boolean'],
 
@@ -72,15 +120,35 @@ class UpdateContactSettingsRequest extends FormRequest
             'socials.*.url' => ['required', 'string', 'max:500'],
 
             'departments' => ['sometimes', 'array', 'max:30'],
-            'departments.*.title' => ['required', 'string', 'max:160'],
+            'departments.*.title' => [
+                'required',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    self::validateLocalizedLine($attribute, $value, $fail, 160, true);
+                },
+            ],
             'departments.*.phone' => ['required', 'string', 'max:120'],
             'departments.*.email' => ['required', 'string', 'email', 'max:120'],
             'departments.*.showInFooter' => ['sometimes', 'boolean'],
 
             'offices' => ['required', 'array', 'min:1', 'max:30'],
-            'offices.*.city' => ['required', 'string', 'max:120'],
-            'offices.*.country' => ['required', 'string', 'max:120'],
-            'offices.*.address' => ['required', 'string', 'max:500'],
+            'offices.*.city' => [
+                'required',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    self::validateLocalizedLine($attribute, $value, $fail, 120, true);
+                },
+            ],
+            'offices.*.country' => [
+                'required',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    self::validateLocalizedLine($attribute, $value, $fail, 120, true);
+                },
+            ],
+            'offices.*.address' => [
+                'required',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    self::validateLocalizedLine($attribute, $value, $fail, 2000, true);
+                },
+            ],
             'offices.*.phone' => ['required', 'string', 'max:120'],
             'offices.*.email' => ['required', 'string', 'email', 'max:120'],
         ];

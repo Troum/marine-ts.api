@@ -89,8 +89,8 @@ class ContactSettingsService
 
                 return [
                     'iconKey' => $this->normalizeIconKey($row['iconKey'] ?? $row['icon_key'] ?? $row['icon'] ?? null),
-                    'label' => (string) ($row['label'] ?? ''),
-                    'value' => (string) ($row['value'] ?? ''),
+                    'label' => $this->normalizeLocalizedLine($row['label'] ?? ''),
+                    'value' => $this->normalizeLocalizedLine($row['value'] ?? ''),
                     'href' => isset($row['href']) && $row['href'] !== '' ? (string) $row['href'] : null,
                     'showInFooter' => $this->boolValue($row['showInFooter'] ?? $row['show_in_footer'] ?? true),
                 ];
@@ -106,7 +106,7 @@ class ContactSettingsService
                 }
 
                 return [
-                    'title' => (string) ($row['title'] ?? ''),
+                    'title' => $this->normalizeLocalizedLine($row['title'] ?? ''),
                     'phone' => (string) ($row['phone'] ?? ''),
                     'email' => (string) ($row['email'] ?? ''),
                     'showInFooter' => $this->boolValue($row['showInFooter'] ?? $row['show_in_footer'] ?? false),
@@ -124,14 +124,34 @@ class ContactSettingsService
                 }
 
                 return [
-                    'city' => (string) ($row['city'] ?? ''),
-                    'country' => (string) ($row['country'] ?? ''),
-                    'address' => (string) ($row['address'] ?? ''),
+                    'city' => $this->normalizeLocalizedLine($row['city'] ?? ''),
+                    'country' => $this->normalizeLocalizedLine($row['country'] ?? ''),
+                    'address' => $this->normalizeLocalizedLine($row['address'] ?? ''),
                     'phone' => (string) ($row['phone'] ?? ''),
                     'email' => (string) ($row['email'] ?? ''),
                 ];
             }, $offices)),
         ];
+    }
+
+    /**
+     * Строка или { ru, en } — как на фронте (`serializeBilingual` / `normalizeContactSettingsPayload`).
+     *
+     * @return string|array{ru: string, en: string}
+     */
+    private function normalizeLocalizedLine(mixed $raw): array|string
+    {
+        if (is_array($raw)) {
+            $ru = trim((string) ($raw['ru'] ?? ''));
+            $en = trim((string) ($raw['en'] ?? ''));
+            if ($en === '' || $en === $ru) {
+                return $ru;
+            }
+
+            return ['ru' => $ru, 'en' => $en];
+        }
+
+        return trim((string) $raw);
     }
 
     private function normalizeIconKey(mixed $raw): string
