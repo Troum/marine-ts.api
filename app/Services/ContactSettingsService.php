@@ -67,7 +67,7 @@ class ContactSettingsService
                     continue;
                 }
                 $iconKey = trim((string) ($row['iconKey'] ?? $row['icon_key'] ?? ''));
-                $url = trim((string) ($row['url'] ?? ''));
+                $url = trim(preg_replace('/\s+/', ' ', strip_tags((string) ($row['url'] ?? ''))) ?? '');
                 if ($iconKey === '' || $url === '') {
                     continue;
                 }

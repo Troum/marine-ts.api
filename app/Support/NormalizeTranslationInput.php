@@ -18,6 +18,7 @@ final class NormalizeTranslationInput
             'seo_title' => $row['seoTitle'] ?? $row['seo_title'] ?? null,
             'seo_description' => $row['seoDescription'] ?? $row['seo_description'] ?? null,
             'seo_keywords' => $row['seoKeywords'] ?? $row['seo_keywords'] ?? null,
+            'seo_image' => $row['seoImage'] ?? $row['seo_image'] ?? null,
         ];
     }
 
@@ -39,6 +40,7 @@ final class NormalizeTranslationInput
             'seo_title' => $row['seoTitle'] ?? $row['seo_title'] ?? null,
             'seo_description' => $row['seoDescription'] ?? $row['seo_description'] ?? null,
             'seo_keywords' => $row['seoKeywords'] ?? $row['seo_keywords'] ?? null,
+            'seo_image' => $row['seoImage'] ?? $row['seo_image'] ?? null,
         ];
     }
 
@@ -57,6 +59,7 @@ final class NormalizeTranslationInput
             'seo_title' => $row['seoTitle'] ?? $row['seo_title'] ?? null,
             'seo_description' => $row['seoDescription'] ?? $row['seo_description'] ?? null,
             'seo_keywords' => $row['seoKeywords'] ?? $row['seo_keywords'] ?? null,
+            'seo_image' => $row['seoImage'] ?? $row['seo_image'] ?? null,
         ];
     }
 
@@ -75,6 +78,7 @@ final class NormalizeTranslationInput
             'seo_title' => $row['seoTitle'] ?? $row['seo_title'] ?? null,
             'seo_description' => $row['seoDescription'] ?? $row['seo_description'] ?? null,
             'seo_keywords' => $row['seoKeywords'] ?? $row['seo_keywords'] ?? null,
+            'seo_image' => $row['seoImage'] ?? $row['seo_image'] ?? null,
         ];
     }
 
@@ -94,6 +98,7 @@ final class NormalizeTranslationInput
             'seo_title' => $row['seoTitle'] ?? $row['seo_title'] ?? null,
             'seo_description' => $row['seoDescription'] ?? $row['seo_description'] ?? null,
             'seo_keywords' => $row['seoKeywords'] ?? $row['seo_keywords'] ?? null,
+            'seo_image' => $row['seoImage'] ?? $row['seo_image'] ?? null,
         ];
     }
 
@@ -108,6 +113,7 @@ final class NormalizeTranslationInput
             'seo_title' => $row['seoTitle'] ?? $row['seo_title'] ?? null,
             'seo_description' => $row['seoDescription'] ?? $row['seo_description'] ?? null,
             'seo_keywords' => $row['seoKeywords'] ?? $row['seo_keywords'] ?? null,
+            'seo_image' => $row['seoImage'] ?? $row['seo_image'] ?? null,
         ];
     }
 }

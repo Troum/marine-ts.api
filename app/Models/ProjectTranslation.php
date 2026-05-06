@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'seo_title',
     'seo_description',
     'seo_keywords',
+    'seo_image',
 ])]
 class ProjectTranslation extends Model
 {

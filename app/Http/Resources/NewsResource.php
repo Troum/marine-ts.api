@@ -44,6 +44,7 @@ class NewsResource extends JsonResource
             'seoTitle' => $t?->seo_title,
             'seoDescription' => $t?->seo_description,
             'seoKeywords' => $t?->seo_keywords,
+            'seoImage' => $t?->seo_image,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];
@@ -71,6 +72,7 @@ class NewsResource extends JsonResource
                 'seoTitle' => $tr->seo_title,
                 'seoDescription' => $tr->seo_description,
                 'seoKeywords' => $tr->seo_keywords,
+                'seoImage' => $tr->seo_image,
             ];
         }
 

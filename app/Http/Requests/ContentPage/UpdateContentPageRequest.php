@@ -50,6 +50,7 @@ class UpdateContentPageRequest extends FormRequest
                         'seoTitle' => $this->input('seoTitle') ?? $this->input('seo_title'),
                         'seoDescription' => $this->input('seoDescription') ?? $this->input('seo_description'),
                         'seoKeywords' => $this->input('seoKeywords') ?? $this->input('seo_keywords'),
+                        'seoImage' => $this->input('seoImage') ?? $this->input('seo_image'),
                     ],
                 ],
             ]);
@@ -101,6 +102,7 @@ class UpdateContentPageRequest extends FormRequest
             $rules["$prefix.seoTitle"] = ['nullable', 'string', 'max:255'];
             $rules["$prefix.seoDescription"] = ['nullable', 'string', 'max:8000'];
             $rules["$prefix.seoKeywords"] = ['nullable', 'string', 'max:500'];
+            $rules["$prefix.seoImage"] = ['nullable', 'string', 'max:2000'];
         }
 
         return $rules;

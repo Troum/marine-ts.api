@@ -149,6 +149,11 @@ class NavigationSettingsService
         return null;
     }
 
+    private function cleanUrlString(string $raw): string
+    {
+        return trim(preg_replace('/\s+/', ' ', strip_tags($raw)) ?? '');
+    }
+
     /**
      * @return string|array{ru: string, en: string}|null
      */
@@ -233,6 +238,7 @@ class NavigationSettingsService
                     continue;
                 }
                 $url = $this->burgerAssocString($soc, 'url', 'url');
+                $url = $url !== null ? $this->cleanUrlString($url) : null;
                 if ($url === null) {
                     continue;
                 }
@@ -242,6 +248,7 @@ class NavigationSettingsService
         }
         if ($socials === []) {
             $url = $this->burgerAssocString($raw, 'socialUrl', 'social_url');
+            $url = $url !== null ? $this->cleanUrlString($url) : null;
             if ($url !== null) {
                 $label = $this->burgerAssocString($raw, 'socialLabel', 'social_label') ?? $url;
                 $socials[] = ['url' => $url, 'label' => $label];

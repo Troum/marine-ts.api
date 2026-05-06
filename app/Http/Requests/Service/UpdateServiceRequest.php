@@ -41,6 +41,7 @@ class UpdateServiceRequest extends FormRequest
                         'seoTitle' => $this->input('seoTitle') ?? $this->input('seo_title'),
                         'seoDescription' => $this->input('seoDescription') ?? $this->input('seo_description'),
                         'seoKeywords' => $this->input('seoKeywords') ?? $this->input('seo_keywords'),
+                        'seoImage' => $this->input('seoImage') ?? $this->input('seo_image'),
                     ],
                 ],
             ]);
@@ -75,6 +76,7 @@ class UpdateServiceRequest extends FormRequest
             $rules["$prefix.seoTitle"] = ['sometimes', 'nullable', 'string', 'max:255'];
             $rules["$prefix.seoDescription"] = ['sometimes', 'nullable', 'string', 'max:8000'];
             $rules["$prefix.seoKeywords"] = ['sometimes', 'nullable', 'string', 'max:500'];
+            $rules["$prefix.seoImage"] = ['sometimes', 'nullable', 'string', 'max:2000'];
         }
 
         return $rules;

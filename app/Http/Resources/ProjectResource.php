@@ -44,6 +44,7 @@ class ProjectResource extends JsonResource
             'seoTitle' => $t?->seo_title,
             'seoDescription' => $t?->seo_description,
             'seoKeywords' => $t?->seo_keywords,
+            'seoImage' => $t?->seo_image,
             'contentPage' => $this->whenLoaded('contentPage', function () use ($locale) {
                 /** @var ContentPage|null $cp */
                 $cp = $this->contentPage;
@@ -86,6 +87,7 @@ class ProjectResource extends JsonResource
                 'seoTitle' => $tr->seo_title,
                 'seoDescription' => $tr->seo_description,
                 'seoKeywords' => $tr->seo_keywords,
+                'seoImage' => $tr->seo_image,
             ];
         }
 
