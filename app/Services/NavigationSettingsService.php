@@ -150,6 +150,34 @@ class NavigationSettingsService
     }
 
     /**
+     * @return string|array{ru: string, en: string}|null
+     */
+    private function burgerAssocLocalized(array $assoc, string $camel, string $snake): string|array|null
+    {
+        foreach ([$camel, $snake] as $key) {
+            if (! array_key_exists($key, $assoc)) {
+                continue;
+            }
+            $v = $assoc[$key];
+            if (is_array($v)) {
+                $ru = isset($v['ru']) ? trim((string) $v['ru']) : '';
+                $en = isset($v['en']) ? trim((string) $v['en']) : '';
+                if ($ru !== '' || $en !== '') {
+                    return ['ru' => $ru, 'en' => $en];
+                }
+
+                continue;
+            }
+            $s = $this->burgerAssocString($assoc, $camel, $snake);
+            if ($s !== null) {
+                return $s;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @return array<string, mixed>|null
      */
     private function normalizeBurgerContacts(mixed $raw): ?array
@@ -158,7 +186,7 @@ class NavigationSettingsService
             return null;
         }
         $out = [];
-        $phonesTitle = $this->burgerAssocString($raw, 'phonesTitle', 'phones_title');
+        $phonesTitle = $this->burgerAssocLocalized($raw, 'phonesTitle', 'phones_title');
         if ($phonesTitle !== null) {
             $out['phonesTitle'] = $phonesTitle;
         }
@@ -174,7 +202,7 @@ class NavigationSettingsService
                 $out['phones'] = $phones;
             }
         }
-        $emailTitle = $this->burgerAssocString($raw, 'emailTitle', 'email_title');
+        $emailTitle = $this->burgerAssocLocalized($raw, 'emailTitle', 'email_title');
         if ($emailTitle !== null) {
             $out['emailTitle'] = $emailTitle;
         }
@@ -223,7 +251,7 @@ class NavigationSettingsService
             $out['socials'] = $socials;
         }
 
-        $officesColumnTitle = $this->burgerAssocString($raw, 'officesColumnTitle', 'offices_column_title');
+        $officesColumnTitle = $this->burgerAssocLocalized($raw, 'officesColumnTitle', 'offices_column_title');
         if ($officesColumnTitle !== null) {
             $out['officesColumnTitle'] = $officesColumnTitle;
         }
@@ -234,12 +262,12 @@ class NavigationSettingsService
                 if (! is_array($of)) {
                     continue;
                 }
-                $addr = $this->burgerAssocString($of, 'address', 'address');
+                $addr = $this->burgerAssocLocalized($of, 'address', 'address');
                 if ($addr === null) {
                     continue;
                 }
                 $entry = ['address' => $addr];
-                $otitle = $this->burgerAssocString($of, 'title', 'title');
+                $otitle = $this->burgerAssocLocalized($of, 'title', 'title');
                 if ($otitle !== null) {
                     $entry['title'] = $otitle;
                 }
