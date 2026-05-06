@@ -40,10 +40,7 @@ class UpdateContentPageRequest extends FormRequest
         }
 
         $default = (string) config('marine.default_locale');
-        if ($this->has('translations')) {
-            return;
-        }
-        if ($this->has('title')) {
+        if (! $this->has('translations') && $this->has('title')) {
             $this->merge([
                 'translations' => [
                     $default => [
@@ -57,68 +54,7 @@ class UpdateContentPageRequest extends FormRequest
                     ],
                 ],
             ]);
-
-            return;
         }
-        if ($this->hasAnyRootSeoKeys()) {
-            $this->mergeTranslationsPreservingContentWhenOnlyRootSeo($default);
-        }
-    }
-
-    /**
-     * Root-level SEO fields only (e.g. admin SEO tab): keep existing title/body so sync does not wipe content.
-     */
-    private function mergeTranslationsPreservingContentWhenOnlyRootSeo(string $defaultLocale): void
-    {
-        /** @var ContentPage $page */
-        $page = $this->route('content_page');
-        $tr = $page->translations()->where('locale', $defaultLocale)->first();
-        $all = $this->all();
-
-        $this->merge([
-            'translations' => [
-                $defaultLocale => [
-                    'title' => $tr?->title ?? '',
-                    'excerpt' => $tr?->excerpt,
-                    'body' => $tr?->body ?? '<p></p>',
-                    'seoTitle' => $this->pickRootOrExistingSeo($all, 'seoTitle', 'seo_title', $tr?->seo_title),
-                    'seoDescription' => $this->pickRootOrExistingSeo($all, 'seoDescription', 'seo_description', $tr?->seo_description),
-                    'seoKeywords' => $this->pickRootOrExistingSeo($all, 'seoKeywords', 'seo_keywords', $tr?->seo_keywords),
-                    'seoImage' => $this->pickRootOrExistingSeo($all, 'seoImage', 'seo_image', $tr?->seo_image),
-                ],
-            ],
-        ]);
-    }
-
-    /**
-     * @param  array<string, mixed>  $all
-     */
-    private function pickRootOrExistingSeo(array $all, string $camel, string $snake, ?string $existing): ?string
-    {
-        if (array_key_exists($camel, $all)) {
-            $v = $all[$camel];
-
-            return $v === null ? null : (is_string($v) ? $v : (string) $v);
-        }
-        if (array_key_exists($snake, $all)) {
-            $v = $all[$snake];
-
-            return $v === null ? null : (is_string($v) ? $v : (string) $v);
-        }
-
-        return $existing;
-    }
-
-    private function hasAnyRootSeoKeys(): bool
-    {
-        $all = $this->all();
-        foreach (['seoTitle', 'seo_title', 'seoDescription', 'seo_description', 'seoKeywords', 'seo_keywords', 'seoImage', 'seo_image'] as $key) {
-            if (array_key_exists($key, $all)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
