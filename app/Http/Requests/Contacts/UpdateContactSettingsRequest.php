@@ -126,7 +126,12 @@ class UpdateContactSettingsRequest extends FormRequest
                     self::validateLocalizedLine($attribute, $value, $fail, 160, true);
                 },
             ],
-            'departments.*.phone' => ['required', 'string', 'max:120'],
+            'departments.*.phone' => [
+                'required',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    self::validateLocalizedLine($attribute, $value, $fail, 120, true);
+                },
+            ],
             'departments.*.email' => ['required', 'string', 'email', 'max:120'],
             'departments.*.showInFooter' => ['sometimes', 'boolean'],
 

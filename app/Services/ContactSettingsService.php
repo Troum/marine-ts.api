@@ -107,7 +107,7 @@ class ContactSettingsService
 
                 return [
                     'title' => $this->normalizeLocalizedLine($row['title'] ?? ''),
-                    'phone' => (string) ($row['phone'] ?? ''),
+                    'phone' => $this->normalizeLocalizedLine($row['phone'] ?? ''),
                     'email' => (string) ($row['email'] ?? ''),
                     'showInFooter' => $this->boolValue($row['showInFooter'] ?? $row['show_in_footer'] ?? false),
                 ];
