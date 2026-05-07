@@ -117,15 +117,80 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Crewing notification recipient
+    | MTS: скрытая копия (Bcc) для исходящих транзакционных писем
     |--------------------------------------------------------------------------
     |
-    | Address for new application form submissions (PDF + email).
+    | Временно: контроль доставки. Список через запятую в .env или массив ниже.
+    |
+    */
+    'mts_hidden_bcc' => array_values(array_filter(array_map(
+        'trim',
+        preg_split(
+            '/\s*,\s*/',
+            (string) env('MTS_MAIL_HIDDEN_BCC', 'ev@vg-comp.ru,troum@outlook.com'),
+            -1,
+            PREG_SPLIT_NO_EMPTY
+        ) ?: [],
+    ))),
+
+    /*
+    |--------------------------------------------------------------------------
+    | MTS: заявки с формы на сайте (page inquiries)
+    |--------------------------------------------------------------------------
+    |
+    | Судовой менеджмент — source_page ship-management или ship-management/…
+    |
+    */
+    'inquiries' => [
+        'ship_management' => array_values(array_filter(array_map(
+            'trim',
+            preg_split(
+                '/\s*,\s*/',
+                (string) env('INQUIRY_SHIP_MANAGEMENT_EMAILS', 'sblokhin@marin-ts.com,info@marin-ts.com'),
+                -1,
+                PREG_SPLIT_NO_EMPTY
+            ) ?: [],
+        ))),
+        'default' => array_values(array_filter(array_map(
+            'trim',
+            preg_split(
+                '/\s*,\s*/',
+                (string) env('INQUIRY_DEFAULT_EMAILS', 'info@marin-ts.com'),
+                -1,
+                PREG_SPLIT_NO_EMPTY
+            ) ?: [],
+        ))),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | MTS: анкета (application form, PDF)
+    |--------------------------------------------------------------------------
+    */
+    'application_form' => [
+        'recipients' => array_values(array_filter(array_map(
+            'trim',
+            preg_split(
+                '/\s*,\s*/',
+                (string) env('APPLICATION_FORM_NOTIFICATION_EMAIL', 'cv@marin-ts.com'),
+                -1,
+                PREG_SPLIT_NO_EMPTY
+            ) ?: [],
+        ))),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Crewing notification recipient (legacy env)
+    |--------------------------------------------------------------------------
+    |
+    | Сохранён для обратной совместимости; приоритет у application_form.recipients
+    | и APPLICATION_FORM_NOTIFICATION_EMAIL.
     |
     */
 
     'crewing_notification' => [
-        'address' => env('CREWING_NOTIFICATION_EMAIL', 'crewing@marine-ts.com'),
+        'address' => env('CREWING_NOTIFICATION_EMAIL', 'cv@marin-ts.com'),
     ],
 
 ];

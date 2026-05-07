@@ -5,8 +5,12 @@ namespace App\Services;
 use App\Contracts\Repositories\PageInquiryRepositoryInterface;
 use App\Contracts\Services\PageInquiryServiceInterface;
 use App\DTO\PageInquiry\StorePageInquiryDto;
+use App\Mail\PageInquirySubmittedMail;
 use App\Models\PageInquiry;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 final class PageInquiryService implements PageInquiryServiceInterface
 {
@@ -16,8 +20,8 @@ final class PageInquiryService implements PageInquiryServiceInterface
 
     public function store(StorePageInquiryDto $dto, ?string $ip): PageInquiry
     {
-        /** @var PageInquiry */
-        return $this->pageInquiryRepository->createOne([
+        /** @var PageInquiry $inquiry */
+        $inquiry = $this->pageInquiryRepository->createOne([
             'name' => $dto->name,
             'company' => $dto->company,
             'position' => $dto->position,
@@ -34,6 +38,51 @@ final class PageInquiryService implements PageInquiryServiceInterface
             'source_page' => $dto->source_page,
             'ip' => $ip,
         ]);
+
+        $recipients = $this->pageInquiryRecipients($dto->source_page);
+        if ($recipients === []) {
+            Log::warning('Page inquiry saved but no notification recipients configured', [
+                'page_inquiry_id' => $inquiry->id,
+                'source_page' => $dto->source_page,
+            ]);
+        } else {
+            try {
+                Mail::to($recipients)->send(new PageInquirySubmittedMail($inquiry));
+            } catch (Throwable $e) {
+                Log::error('Page inquiry email failed', [
+                    'page_inquiry_id' => $inquiry->id,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return $inquiry;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function pageInquiryRecipients(string $sourcePage): array
+    {
+        $s = trim($sourcePage);
+        $key = ($s === 'ship-management' || str_starts_with($s, 'ship-management/'))
+            ? 'ship_management'
+            : 'default';
+
+        $list = config('mail.inquiries.'.$key);
+        if (! is_array($list)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($list as $addr) {
+            $t = trim((string) $addr);
+            if ($t !== '') {
+                $out[] = $t;
+            }
+        }
+
+        return array_values(array_unique($out));
     }
 
     /**

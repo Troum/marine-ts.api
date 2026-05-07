@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 #[ObservedBy([ApplicationFormObserver::class])]
 #[Fillable([
@@ -23,6 +24,32 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class ApplicationForm extends Model
 {
+    protected static function booted(): void
+    {
+        static::creating(function (ApplicationForm $model): void {
+            if (! is_string($model->uuid) || $model->uuid === '') {
+                $model->uuid = (string) Str::uuid();
+            }
+        });
+    }
+
+    /**
+     * Имя PDF для вложений, скачивания и писем (anketa-{slug}_{uuid}.pdf).
+     */
+    public function pdfFileName(): string
+    {
+        $slug = Str::slug(trim((string) $this->full_name), '-', 'ru');
+        if ($slug === '') {
+            $slug = 'kandidat';
+        }
+
+        if (! is_string($this->uuid) || $this->uuid === '') {
+            throw new \RuntimeException('ApplicationForm.uuid is required for PDF filename.');
+        }
+
+        return 'anketa-'.$slug.'_'.$this->uuid.'.pdf';
+    }
+
     /**
      * @return array<string, string>
      */

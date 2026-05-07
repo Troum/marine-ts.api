@@ -146,14 +146,9 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
 
     public function pdfDownload(ApplicationForm $applicationForm)
     {
-        $slug = $applicationForm->vacancy?->slug
-            ? Str::slug($applicationForm->vacancy->slug)
-            : 'open';
-        $filename = 'anketa-'.$applicationForm->id.'-'.$slug.'.pdf';
-
         return Pdf::view('pdf.application-form', ApplicationFormPdfTemplateData::make($applicationForm))
             ->format(Format::A4)
-            ->name($filename)
+            ->name($applicationForm->pdfFileName())
             ->download();
     }
 

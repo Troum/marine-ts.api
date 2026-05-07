@@ -33,7 +33,7 @@
                     <tr>
                         <td style="padding:14px 18px;">
                             <p style="margin:0;font-family:Consolas,'Courier New',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#adb5bd;">Вложение</p>
-                            <p style="margin:6px 0 0 0;font-size:13px;color:#6c757d;">Файл <strong style="color:#1c1c1e;">anketa-{{ $applicationForm->id }}.pdf</strong> с данными анкеты.</p>
+                            <p style="margin:6px 0 0 0;font-size:13px;color:#6c757d;">Файл <strong style="color:#1c1c1e;">{{ $pdfFileName }}</strong> с данными анкеты.</p>
                         </td>
                     </tr>
                 </table>

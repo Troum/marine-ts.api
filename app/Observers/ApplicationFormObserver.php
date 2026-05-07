@@ -20,9 +20,20 @@ final class ApplicationFormObserver
                 ->format(Format::A4)
                 ->generatePdfContent();
 
-            $to = config('mail.crewing_notification.address');
+            $recipients = array_values(array_filter(config('mail.application_form.recipients', [])));
+            if ($recipients === []) {
+                $fallback = trim((string) config('mail.crewing_notification.address'));
+                $recipients = $fallback !== '' ? [$fallback] : [];
+            }
+            if ($recipients === []) {
+                Log::error('ApplicationForm email skipped: no recipients configured', [
+                    'application_form_id' => $applicationForm->id,
+                ]);
 
-            Mail::to($to)->send(new ApplicationFormSubmittedMail($applicationForm, $pdfContent));
+                return;
+            }
+
+            Mail::to($recipients)->send(new ApplicationFormSubmittedMail($applicationForm, $pdfContent));
         } catch (Throwable $e) {
             Log::error('ApplicationForm PDF or crewing email failed', [
                 'application_form_id' => $applicationForm->id,

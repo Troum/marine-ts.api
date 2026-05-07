@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Models\FeedbackMessage;
 use App\Models\User;
+use App\Support\MtsMailEnvelope;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
@@ -29,11 +30,16 @@ class FeedbackReplyMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(
+        $senderName = trim((string) ($this->sender->name ?? ''));
+        $replyTo = $senderName !== ''
+            ? [new Address((string) $this->sender->email, $senderName)]
+            : [new Address((string) $this->sender->email)];
+
+        return MtsMailEnvelope::transactional(
             subject: sprintf('Ответ на ваше сообщение — %s', config('app.name')),
-            replyTo: [
-                new Address($this->sender->email, (string) ($this->sender->name ?? '')),
-            ],
+            mailType: 'feedback-reply',
+            replyTo: $replyTo,
+            entityId: $this->feedbackMessage->id,
         );
     }
 

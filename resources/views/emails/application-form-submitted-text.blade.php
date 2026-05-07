@@ -5,7 +5,7 @@
 
 Поступила новая анкета кандидата {{ $applicationForm->full_name }} (ID {{ $applicationForm->id }}).
 
-Копия данных во вложении в формате PDF (anketa-{{ $applicationForm->id }}.pdf).
+Копия данных во вложении в формате PDF ({{ $pdfFileName }}).
 
 ────────────────────────────────────────
 Внутреннее уведомление · {{ config('app.name') }}

@@ -3,8 +3,10 @@
 namespace App\Mail;
 
 use App\Models\ApplicationForm;
+use App\Support\MtsMailEnvelope;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -22,12 +24,21 @@ class ApplicationFormSubmittedMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(
+        $name = trim((string) $this->applicationForm->full_name);
+        $replyTo = $name !== ''
+            ? [new Address((string) $this->applicationForm->email, $name)]
+            : [new Address((string) $this->applicationForm->email)];
+
+        return MtsMailEnvelope::transactional(
             subject: sprintf(
-                'Новая анкета #%d — %s',
+                'Новая анкета #%d — %s · %s',
                 $this->applicationForm->id,
                 $this->applicationForm->full_name,
+                config('app.name'),
             ),
+            mailType: 'application-form-submitted',
+            replyTo: $replyTo,
+            entityId: $this->applicationForm->id,
         );
     }
 
@@ -36,6 +47,9 @@ class ApplicationFormSubmittedMail extends Mailable
         return new Content(
             html: 'emails.application-form-submitted',
             text: 'emails.application-form-submitted-text',
+            with: [
+                'pdfFileName' => $this->applicationForm->pdfFileName(),
+            ],
         );
     }
 
@@ -47,7 +61,7 @@ class ApplicationFormSubmittedMail extends Mailable
         return [
             Attachment::fromData(
                 fn (): string => $this->pdfBinary,
-                sprintf('anketa-%d.pdf', $this->applicationForm->id),
+                $this->applicationForm->pdfFileName(),
             )->withMime('application/pdf'),
         ];
     }
