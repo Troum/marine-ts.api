@@ -5,6 +5,7 @@ namespace App\Mail;
 use App\Models\PageInquiry;
 use App\Support\MtsMailEnvelope;
 use App\Support\PageInquiryLabelResolver;
+use App\Support\PageInquirySourcePageLabel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
@@ -58,6 +59,7 @@ class PageInquirySubmittedMail extends Mailable
             with: [
                 'vesselTypesHuman' => $vesselTypesHuman,
                 'requiredServicesHuman' => $requiredServicesHuman,
+                'sourcePageLabelRu' => PageInquirySourcePageLabel::resolve((string) $this->pageInquiry->source_page),
             ],
         );
     }

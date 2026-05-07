@@ -1,17 +1,18 @@
 {{ config('app.name') }} — заявка #{{ $pageInquiry->id }}
-Страница: {{ $pageInquiry->source_page }}
+Страница: {{ $sourcePageLabelRu }}
 ────────────────────────────────────────
 
 {{ $pageInquiry->name }} · {{ $pageInquiry->company }}
 @if($pageInquiry->position)
 Должность: {{ $pageInquiry->position }}
 @endif
-Email: {{ $pageInquiry->email }}
+E-mail: {{ $pageInquiry->email }}
 @if($pageInquiry->phone)
 Телефон: {{ $pageInquiry->phone }}
 @endif
 
-Судно: {{ $pageInquiry->vessels_count }} · флаг: {{ $pageInquiry->vessel_flag }}
+Флот: {{ $pageInquiry->vessels_count }}
+Флаг: {{ $pageInquiry->vessel_flag }}
 @if($pageInquiry->main_ports)
 Порты: {{ $pageInquiry->main_ports }}
 @endif
