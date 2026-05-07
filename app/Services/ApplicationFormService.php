@@ -8,6 +8,7 @@ use App\Contracts\Services\VacancyServiceInterface;
 use App\DTO\ApplicationForm\StoreApplicationFormDto;
 use App\DTO\ApplicationForm\StoreOpenApplicationFormDto;
 use App\Enums\ApplicationFormStatus;
+use App\Mail\ApplicationFormSubmittedMail;
 use App\Mail\DocumentsRequestedMail;
 use App\Models\ApplicationForm;
 use App\Models\Vacancy;
@@ -15,6 +16,7 @@ use App\Support\ApplicationFormPdfTemplateData;
 use App\Support\RequestedDocumentCatalog;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -23,6 +25,7 @@ use RuntimeException;
 use Spatie\LaravelPdf\Enums\Format;
 use Spatie\LaravelPdf\Facades\Pdf;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
 final class ApplicationFormService implements ApplicationFormServiceInterface
 {
@@ -189,6 +192,36 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
 
         /** @var ApplicationForm */
         return $this->applicationFormRepository->getOne($applicationForm->id);
+    }
+
+    public function sendCrewingSubmittedNotification(ApplicationForm $applicationForm): void
+    {
+        try {
+            $pdfContent = Pdf::view('pdf.application-form', ApplicationFormPdfTemplateData::make($applicationForm))
+                ->format(Format::A4)
+                ->generatePdfContent();
+
+            $recipients = array_values(array_filter(config('mail.application_form.recipients', [])));
+            if ($recipients === []) {
+                $fallback = trim((string) config('mail.crewing_notification.address'));
+                $recipients = $fallback !== '' ? [$fallback] : [];
+            }
+            if ($recipients === []) {
+                Log::error('ApplicationForm email skipped: no recipients configured', [
+                    'application_form_id' => $applicationForm->id,
+                ]);
+
+                return;
+            }
+
+            Mail::to($recipients)->send(new ApplicationFormSubmittedMail($applicationForm, $pdfContent));
+        } catch (Throwable $e) {
+            Log::error('ApplicationForm PDF or crewing email failed', [
+                'application_form_id' => $applicationForm->id,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
     }
 
     public function downloadPhoto(ApplicationForm $applicationForm): StreamedResponse

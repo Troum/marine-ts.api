@@ -53,6 +53,10 @@ class StoreApplicationFormRequest extends FormRequest
             'consentEnPd' => ['accepted'],
             /** Фото кандидата: опционально, до 5 МБ, jpg/png/webp. */
             'photo' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'desiredVesselTypes' => ['required', 'array', 'min:1', 'max:3'],
+            'desiredVesselTypes.*' => ['required', 'string', 'max:128'],
+            'positionApplyingFor' => ['required', 'array', 'min:1', 'max:3'],
+            'positionApplyingFor.*' => ['required', 'string', 'max:255'],
         ];
     }
 }

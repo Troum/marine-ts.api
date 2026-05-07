@@ -28,7 +28,9 @@ final class ApplicationFormPdfTemplateData
 
         return [
             'form' => $form,
-            'positionApplyingFor' => self::strFrom($p, 'positionApplyingFor'),
+            'positionApplyingFor' => self::positionApplyingForLine($p),
+            'desiredVesselTypesLine' => self::desiredVesselTypesLine($p),
+            'pdfSubmissionDate' => $form->created_at?->format('d.m.Y') ?? '—',
             'surnameAndName' => self::strFrom($p, 'surnameAndName'),
             'dateOfBirth' => self::strFrom($p, 'dateOfBirth'),
             'photoFileName' => self::strFrom($p, 'photoFileName'),
@@ -113,6 +115,51 @@ final class ApplicationFormPdfTemplateData
             'gif' => 'image/gif',
             default => 'image/jpeg',
         };
+    }
+
+    /**
+     * @param  array<string, mixed>  $p
+     */
+    private static function positionApplyingForLine(array $p): string
+    {
+        $raw = self::pick($p, 'positionApplyingFor');
+        if (is_array($raw)) {
+            $parts = [];
+            foreach ($raw as $item) {
+                if (is_string($item)) {
+                    $t = trim($item);
+                    if ($t !== '') {
+                        $parts[] = $t;
+                    }
+                }
+            }
+
+            return implode(', ', $parts);
+        }
+
+        return self::scalar($raw);
+    }
+
+    /**
+     * @param  array<string, mixed>  $p
+     */
+    private static function desiredVesselTypesLine(array $p): string
+    {
+        $raw = self::pick($p, 'desiredVesselTypes');
+        if (! is_array($raw)) {
+            return '';
+        }
+        $parts = [];
+        foreach ($raw as $item) {
+            if (is_string($item)) {
+                $t = trim($item);
+                if ($t !== '') {
+                    $parts[] = $t;
+                }
+            }
+        }
+
+        return implode(', ', $parts);
     }
 
     /**

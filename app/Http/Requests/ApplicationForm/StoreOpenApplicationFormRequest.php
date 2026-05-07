@@ -33,7 +33,8 @@ class StoreOpenApplicationFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'positionApplyingFor' => ['required', 'string', 'max:255'],
+            'positionApplyingFor' => ['required', 'array', 'min:1', 'max:3'],
+            'positionApplyingFor.*' => ['required', 'string', 'max:255'],
             'lastName' => ['required', 'string', 'max:255'],
             'firstName' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255'],
@@ -43,6 +44,8 @@ class StoreOpenApplicationFormRequest extends FormRequest
             'consentEnAccuracy' => ['accepted'],
             'consentEnPd' => ['accepted'],
             'photo' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'desiredVesselTypes' => ['required', 'array', 'min:1', 'max:3'],
+            'desiredVesselTypes.*' => ['required', 'string', 'max:128'],
         ];
     }
 }

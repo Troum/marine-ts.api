@@ -3,14 +3,12 @@
 namespace App\Models;
 
 use App\Enums\ApplicationFormStatus;
-use App\Observers\ApplicationFormObserver;
+use App\Support\ApplicationFormPdfFilename;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
-#[ObservedBy([ApplicationFormObserver::class])]
 #[Fillable([
     'vacancy_id',
     'status',
@@ -34,20 +32,11 @@ class ApplicationForm extends Model
     }
 
     /**
-     * Имя PDF для вложений, скачивания и писем (anketa-{slug}_{uuid}.pdf).
+     * Имя PDF: lastName_firstName_pos_…должности…_ship_…типы_судов…_shortUuid.pdf
      */
     public function pdfFileName(): string
     {
-        $slug = Str::slug(trim((string) $this->full_name), '-', 'ru');
-        if ($slug === '') {
-            $slug = 'kandidat';
-        }
-
-        if (! is_string($this->uuid) || $this->uuid === '') {
-            throw new \RuntimeException('ApplicationForm.uuid is required for PDF filename.');
-        }
-
-        return 'anketa-'.$slug.'_'.$this->uuid.'.pdf';
+        return ApplicationFormPdfFilename::build($this);
     }
 
     /**

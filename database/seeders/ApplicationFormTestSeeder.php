@@ -32,12 +32,13 @@ class ApplicationFormTestSeeder extends Seeder
                 'phone' => '+7 900 123-45-67',
                 'payload' => [
                     'vacancySlug' => $vacancy->slug,
-                    'positionApplyingFor' => $positionTitle,
+                    'positionApplyingFor' => $positionTitle !== '' ? [$positionTitle] : [],
                     'lastName' => 'Иванов',
                     'firstName' => 'Пётр',
                     'fathersName' => 'Сергеевич',
                     'email' => 'test.anketa@marine-ts.local',
                     'mobilePhone' => '+7 900 123-45-67',
+                    'desiredVesselTypes' => ['Tanker', 'Bulker'],
                     'note' => 'Тестовая запись из ApplicationFormTestSeeder',
                 ],
             ]);
@@ -50,12 +51,13 @@ class ApplicationFormTestSeeder extends Seeder
                 'phone' => '+7 900 123-45-67',
                 'payload' => [
                     'vacancySlug' => $vacancy->slug,
-                    'positionApplyingFor' => $positionTitle,
+                    'positionApplyingFor' => $positionTitle !== '' ? [$positionTitle] : [],
                     'lastName' => 'Иванов',
                     'firstName' => 'Пётр',
                     'fathersName' => 'Сергеевич',
                     'email' => 'test.anketa@marine-ts.local',
                     'mobilePhone' => '+7 900 123-45-67',
+                    'desiredVesselTypes' => ['Tanker', 'Bulker'],
                     'note' => 'Тестовая запись из ApplicationFormTestSeeder',
                 ],
             ]);

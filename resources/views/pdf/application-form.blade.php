@@ -115,6 +115,12 @@
                     </tr>
                     <tr>
                         <td class="cell-border" style="padding:8px; min-height:50px;">
+                            <div class="field-label">Desired vessel type(s):</div>
+                            <div class="field-value">{{ $desiredVesselTypesLine !== '' ? $desiredVesselTypesLine : '—' }}</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="cell-border" style="padding:8px; min-height:50px;">
                             <div class="field-label">Surname and name:</div>
                             <div class="field-value">{{ $surnameAndName }}</div>
                         </td>
@@ -495,15 +501,14 @@
             </td>
             <td style="width:30%;">
                 <span class="sig">DATE:</span>
-                <span class="sig-line" style="min-width:80px;">&nbsp;</span>
+                <span class="sig-line" style="min-width:80px;">{{ $pdfSubmissionDate }}</span>
             </td>
         </tr>
     </table>
 
     <div class="footer-note">
         <p style="margin:0;">
-            Пожалуйста, сохраните эту анкету с именем типа: <strong>Surname_Position</strong><br>
-            Please save this application with this name type: <strong>Surname_Position</strong>
+            Рекомендуемое имя файла / Suggested file name pattern: <strong>LastName_FirstName_pos_…positions…_ship_…vessel_types…_shortId.pdf</strong> (короткий уникальный суффикс из UUID добавляется автоматически / a short unique id suffix is taken from the form UUID)
         </p>
     </div>
 

@@ -56,6 +56,11 @@ interface ApplicationFormServiceInterface
     public function attachPhoto(ApplicationForm $applicationForm, UploadedFile $file): ApplicationForm;
 
     /**
+     * Сгенерировать PDF и отправить уведомление crewing (после сохранения анкеты и опционального фото).
+     */
+    public function sendCrewingSubmittedNotification(ApplicationForm $applicationForm): void;
+
+    /**
      * Скачать (или показать) фото кандидата (admin-эндпоинт).
      */
     public function downloadPhoto(ApplicationForm $applicationForm): StreamedResponse;

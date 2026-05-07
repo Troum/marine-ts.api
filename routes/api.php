@@ -2,10 +2,11 @@
 
 use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\AppearanceSettingsController;
 use App\Http\Controllers\Api\ApplicationFormController;
 use App\Http\Controllers\Api\ApplicationFormDocumentUploadController;
+use App\Http\Controllers\Api\ApplicationFormListsController;
 use App\Http\Controllers\Api\ApplicationFormSupplementaryDownloadController;
-use App\Http\Controllers\Api\AppearanceSettingsController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContactSettingsController;
 use App\Http\Controllers\Api\ContentPageController;
@@ -68,6 +69,8 @@ Route::get('/gallery', [GalleryItemController::class, 'index']);
 Route::get('/contact-settings', [ContactSettingsController::class, 'show']);
 
 Route::get('/navigation-settings', [NavigationSettingsController::class, 'show']);
+Route::get('/application-form-lists', [ApplicationFormListsController::class, 'show']);
+
 Route::get('/appearance-settings', [AppearanceSettingsController::class, 'show']);
 Route::get('/footer-navigation-settings', [FooterNavigationSettingsController::class, 'show']);
 
@@ -82,6 +85,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/users', [AdminUserController::class, 'store']);
     Route::put('/users/{user}', [AdminUserController::class, 'update'])->whereNumber('user');
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->whereNumber('user');
+
+    Route::put('/application-form-lists', [ApplicationFormListsController::class, 'update']);
 
     Route::get('/vacancies/manage', [VacancyController::class, 'manageIndex']);
     Route::get('/application-forms/manage', [ApplicationFormController::class, 'manageIndexAll']);

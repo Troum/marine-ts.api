@@ -41,6 +41,7 @@ final class ApplicationFormPdfPresenter
         return match ($key) {
             'vacancySlug' => 'Slug вакансии',
             'positionApplyingFor' => 'Должность',
+            'desiredVesselTypes' => 'Тип судна (выбор)',
             'surnameAndName' => 'Фамилия и имя (одной строкой)',
             'dateOfBirth' => 'Дата рождения',
             'photoFileName' => 'Файл фото',

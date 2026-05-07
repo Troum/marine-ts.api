@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Contracts\Services\ApplicationFormServiceInterface;
 use App\DTO\ApplicationForm\StoreApplicationFormDto;
 use App\DTO\ApplicationForm\StoreOpenApplicationFormDto;
+use App\Events\ApplicationFormSubmitted;
 use App\Enums\ApplicationFormStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ApplicationForm\IndexApplicationFormsForVacancyRequest;
@@ -59,6 +60,8 @@ class ApplicationFormController extends Controller
             );
         }
 
+        ApplicationFormSubmitted::dispatch($applicationForm->fresh());
+
         return new ApplicationFormResource($applicationForm->fresh())
             ->response()
             ->setStatusCode(201);
@@ -84,6 +87,8 @@ class ApplicationFormController extends Controller
                 $request->file('photo'),
             );
         }
+
+        ApplicationFormSubmitted::dispatch($applicationForm->fresh());
 
         return new ApplicationFormResource($applicationForm->fresh())
             ->response()
