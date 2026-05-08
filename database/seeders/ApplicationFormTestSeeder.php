@@ -28,14 +28,15 @@ class ApplicationFormTestSeeder extends Seeder
             $repo->updateOne($existing, [
                 'vacancy_id' => $vacancy->id,
                 'status' => ApplicationFormStatus::Pending,
-                'full_name' => 'Иванов Пётр Сергеевич',
+                'full_name' => 'Иванов Пётр',
                 'phone' => '+7 900 123-45-67',
                 'payload' => [
                     'vacancySlug' => $vacancy->slug,
                     'positionApplyingFor' => $positionTitle !== '' ? [$positionTitle] : [],
                     'lastName' => 'Иванов',
                     'firstName' => 'Пётр',
-                    'fathersName' => 'Сергеевич',
+                    'expectedMonthlySalary' => '4500',
+                    'expectedMonthlySalaryCurrency' => 'RUB',
                     'email' => 'test.anketa@marine-ts.local',
                     'mobilePhone' => '+7 900 123-45-67',
                     'desiredVesselTypes' => ['Tanker', 'Bulker'],
@@ -46,7 +47,7 @@ class ApplicationFormTestSeeder extends Seeder
             $repo->createOne([
                 'vacancy_id' => $vacancy->id,
                 'status' => ApplicationFormStatus::Pending,
-                'full_name' => 'Иванов Пётр Сергеевич',
+                'full_name' => 'Иванов Пётр',
                 'email' => 'test.anketa@marine-ts.local',
                 'phone' => '+7 900 123-45-67',
                 'payload' => [
@@ -54,7 +55,8 @@ class ApplicationFormTestSeeder extends Seeder
                     'positionApplyingFor' => $positionTitle !== '' ? [$positionTitle] : [],
                     'lastName' => 'Иванов',
                     'firstName' => 'Пётр',
-                    'fathersName' => 'Сергеевич',
+                    'expectedMonthlySalary' => '4500',
+                    'expectedMonthlySalaryCurrency' => 'RUB',
                     'email' => 'test.anketa@marine-ts.local',
                     'mobilePhone' => '+7 900 123-45-67',
                     'desiredVesselTypes' => ['Tanker', 'Bulker'],

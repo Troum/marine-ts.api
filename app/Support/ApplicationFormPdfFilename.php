@@ -6,8 +6,8 @@ use App\Models\ApplicationForm;
 use Illuminate\Support\Str;
 
 /**
- * Имя PDF: {last}_{first}_pos_{должности...}_ship_{типы_судов...}_{shortUuid}.pdf (латиница, подчёркивания).
- * Несколько должностей и типов судов перечисляются отдельными сегментами, без placeholder «Multi».
+ * Имя PDF: {должности}_{фамилия}_{имя}_{типы_судов}.pdf — латиница, слова с заглавной буквы, через подчёркивание.
+ * Пример: Master_Chief_Officer_Ivanov_Petr_Tanker_Dry_Cargo.pdf
  */
 final class ApplicationFormPdfFilename
 {
@@ -15,38 +15,43 @@ final class ApplicationFormPdfFilename
     {
         $payload = is_array($form->payload) ? $form->payload : [];
 
-        $ln = self::segment(self::str($payload, 'lastName'));
-        $fn = self::segment(self::str($payload, 'firstName'));
-
         $positionStrings = self::stringListFromPayload($payload, 'positionApplyingFor', 'position_applying_for');
         $vesselStrings = self::stringListFromPayload($payload, 'desiredVesselTypes', 'desired_vessel_types');
 
-        $positionSlugs = self::segmentsFromList($positionStrings);
-        if ($positionSlugs === []) {
-            $positionSlugs = ['X'];
+        $positionsSegment = self::buildEnumeratedCapitalized($positionStrings, 'Unknown');
+
+        $ln = self::capitalizedTranslitWords(self::scalarStr($payload, 'lastName'));
+        $fn = self::capitalizedTranslitWords(self::scalarStr($payload, 'firstName'));
+        $nameParts = array_values(array_filter([$ln, $fn], static fn (string $s): bool => $s !== ''));
+        $nameSegment = $nameParts === [] ? 'Unknown' : implode('_', $nameParts);
+
+        $vesselsSegment = self::buildEnumeratedCapitalized($vesselStrings, 'Unknown');
+
+        $base = $positionsSegment.'_'.$nameSegment.'_'.$vesselsSegment;
+        $base = preg_replace('/[^A-Za-z0-9_]/', '', $base) ?? '';
+        $base = preg_replace('/_+/', '_', $base) ?? '';
+        $base = trim($base, '_');
+
+        return ($base !== '' ? $base : 'Application').'.pdf';
+    }
+
+    /**
+     * Несколько строк из анкеты: каждая транслитерируется и переводится в Word_Case, затем все части перечисляются через «_».
+     *
+     * @param  list<string>  $strings
+     */
+    private static function buildEnumeratedCapitalized(array $strings, string $ifEmpty): string
+    {
+        $chunks = [];
+        foreach ($strings as $s) {
+            $c = self::capitalizedTranslitWords($s);
+            if ($c !== '') {
+                $chunks[] = $c;
+            }
         }
+        $chunks = array_values(array_unique($chunks));
 
-        $vesselSlugs = self::segmentsFromList($vesselStrings);
-        if ($vesselSlugs === []) {
-            $vesselSlugs = [self::segment('Unknown')];
-        }
-
-        if (! is_string($form->uuid) || $form->uuid === '') {
-            throw new \RuntimeException('ApplicationForm.uuid is required for PDF filename.');
-        }
-        $short = strtolower(substr(str_replace('-', '', $form->uuid), 0, 8));
-
-        $parts = array_merge(
-            [$ln, $fn, 'pos'],
-            $positionSlugs,
-            ['ship'],
-            $vesselSlugs,
-            [$short],
-        );
-        $parts = array_values(array_filter($parts, static fn (string $s): bool => $s !== ''));
-        $base = implode('_', $parts);
-
-        return $base.'.pdf';
+        return $chunks === [] ? $ifEmpty : implode('_', $chunks);
     }
 
     /**
@@ -79,23 +84,9 @@ final class ApplicationFormPdfFilename
     }
 
     /**
-     * @param  list<string>  $strings
-     * @return list<string>
-     */
-    private static function segmentsFromList(array $strings): array
-    {
-        $out = [];
-        foreach ($strings as $s) {
-            $out[] = self::segment($s);
-        }
-
-        return array_values(array_unique(array_filter($out, static fn (string $s): bool => $s !== '')));
-    }
-
-    /**
      * @param  array<string, mixed>  $payload
      */
-    private static function str(array $payload, string $camelKey): string
+    private static function scalarStr(array $payload, string $camelKey): string
     {
         if (isset($payload[$camelKey]) && is_scalar($payload[$camelKey])) {
             return trim((string) $payload[$camelKey]);
@@ -108,18 +99,39 @@ final class ApplicationFormPdfFilename
         return '';
     }
 
-    private static function segment(string $raw): string
+    /**
+     * Транслит + slug (латиница, «слова» через «_»), затем каждое слово с заглавной буквы: Master_Chief_Officer.
+     */
+    private static function capitalizedTranslitWords(string $raw): string
+    {
+        $slug = self::toTranslitSlug($raw);
+        if ($slug === '') {
+            return '';
+        }
+        $parts = explode('_', $slug);
+        $out = [];
+        foreach ($parts as $part) {
+            if ($part === '') {
+                continue;
+            }
+            $first = Str::upper(Str::substr($part, 0, 1));
+            $rest = Str::lower(Str::substr($part, 1));
+            $out[] = $first.$rest;
+        }
+
+        return implode('_', $out);
+    }
+
+    private static function toTranslitSlug(string $raw): string
     {
         $t = trim($raw);
         if ($t === '') {
-            return 'X';
+            return '';
         }
         $slug = Str::slug($t, '_', 'ru');
         $slug = str_replace('-', '_', $slug);
-        $slug = preg_replace('/[^A-Za-z0-9_]/', '', $slug) ?? '';
         $slug = preg_replace('/_+/', '_', $slug) ?? '';
-        $slug = trim($slug, '_');
 
-        return $slug !== '' ? $slug : 'X';
+        return trim($slug, '_');
     }
 }

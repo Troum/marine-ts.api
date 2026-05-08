@@ -3,6 +3,7 @@
 namespace App\Http\Requests\ApplicationForm;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreOpenApplicationFormRequest extends FormRequest
 {
@@ -25,6 +26,16 @@ class StoreOpenApplicationFormRequest extends FormRequest
                 $this->request->remove('payload');
             }
         }
+
+        foreach ([
+            'fathersName',
+            'homePhone',
+            'home_phone',
+            'messenger',
+            'messengers',
+        ] as $deprecated) {
+            $this->request->remove($deprecated);
+        }
     }
 
     /**
@@ -46,6 +57,8 @@ class StoreOpenApplicationFormRequest extends FormRequest
             'photo' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'desiredVesselTypes' => ['required', 'array', 'min:1', 'max:3'],
             'desiredVesselTypes.*' => ['required', 'string', 'max:128'],
+            'expectedMonthlySalary' => ['nullable', 'string', 'max:64'],
+            'expectedMonthlySalaryCurrency' => ['nullable', 'string', Rule::in(['RUB', 'USD', 'EUR'])],
         ];
     }
 }

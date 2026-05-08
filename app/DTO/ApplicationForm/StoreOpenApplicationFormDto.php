@@ -10,6 +10,8 @@ final class StoreOpenApplicationFormDto extends BaseDto
     /**
      * Полное тело анкеты (JSON), как пришло с клиента. Хранится «как есть»,
      * чтобы PDF / письмо crewing смогли отрисовать все поля шаблона.
+     * Актуальные скалярные поля включают `expectedMonthlySalary`; устаревшие
+     * `fathersName`, `homePhone`, `messenger` из запроса удаляются в FormRequest.
      *
      * @var array<string, mixed>
      */

@@ -268,7 +268,6 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
         $fromParts = trim(implode(' ', array_filter([
             isset($payload['lastName']) ? (string) $payload['lastName'] : '',
             isset($payload['firstName']) ? (string) $payload['firstName'] : '',
-            isset($payload['fathersName']) ? (string) $payload['fathersName'] : '',
         ])));
 
         if ($fromParts !== '') {

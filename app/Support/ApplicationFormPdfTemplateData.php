@@ -24,7 +24,7 @@ final class ApplicationFormPdfTemplateData
 
         $travelLabelRows = self::listFrom($p, 'travelRows');
         $competencyLabelRows = self::listFrom($p, 'competencyRows');
-        $otherCertLabelRows = self::listFrom($p, 'otherCertificateRows');
+        $otherCertLabelRows = self::normalizeLegacyOtherCertificateRows(self::listFrom($p, 'otherCertificateRows'));
 
         return [
             'form' => $form,
@@ -36,16 +36,15 @@ final class ApplicationFormPdfTemplateData
             'photoFileName' => self::strFrom($p, 'photoFileName'),
             'lastName' => self::strFrom($p, 'lastName'),
             'firstName' => self::strFrom($p, 'firstName'),
-            'fathersName' => self::strFrom($p, 'fathersName'),
+            'expectedMonthlySalary' => self::strFrom($p, 'expectedMonthlySalary'),
+            'expectedMonthlySalaryCurrency' => self::expectedMonthlySalaryCurrency($p),
             'maritalStatus' => self::strFrom($p, 'maritalStatus'),
             'placeOfBirth' => self::strFrom($p, 'placeOfBirth'),
             'availableFrom' => self::strFrom($p, 'availableFrom'),
             'citizenship' => self::strFrom($p, 'citizenship'),
             'englishLevel' => self::strFrom($p, 'englishLevel'),
             'mobilePhone' => self::strFrom($p, 'mobilePhone'),
-            'homePhone' => self::strFrom($p, 'homePhone'),
             'email' => self::strFrom($p, 'email'),
-            'messenger' => self::strFrom($p, 'messenger'),
             'homeAddress' => self::strFrom($p, 'homeAddress'),
             'nearestAirport' => self::strFrom($p, 'nearestAirport'),
             'nokLastName' => self::strFrom($p, 'nokLastName'),
@@ -115,6 +114,22 @@ final class ApplicationFormPdfTemplateData
             'gif' => 'image/gif',
             default => 'image/jpeg',
         };
+    }
+
+    /**
+     * @param  array<string, mixed>  $p
+     */
+    private static function expectedMonthlySalaryCurrency(array $p): string
+    {
+        $raw = strtoupper(trim(self::strFrom($p, 'expectedMonthlySalaryCurrency')));
+        foreach (['RUB', 'USD', 'EUR'] as $iso) {
+            if ($raw === $iso) {
+                return $iso;
+            }
+        }
+
+        /** Нет ключа в старых анкетах — как на форме по умолчанию */
+        return 'RUB';
     }
 
     /**
@@ -194,7 +209,7 @@ final class ApplicationFormPdfTemplateData
     }
 
     /**
-     * JPEG в data: URI для DomPDF (локальный файл без сети).
+     * JPEG в data URI для DomPDF (`storage/app/public/images/mts-logo.jpg`).
      */
     private static function mtsLogoDataUri(): string
     {
@@ -275,11 +290,38 @@ final class ApplicationFormPdfTemplateData
     private static function mapFixedOtherCerts(array $rows): array
     {
         $out = [];
-        for ($i = 0; $i < 15; $i++) {
+        for ($i = 0; $i < 17; $i++) {
             $out[] = self::cellsFromLabelRow($rows[$i] ?? null);
         }
 
         return $out;
+    }
+
+    /**
+     * До добавления пункта про violence/harassment было 16 фиксированных строк (последняя — Tanker).
+     * Вставляем пустую запись на индекс 15 перед Tanker.
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<array<string, mixed>>
+     */
+    private static function normalizeLegacyOtherCertificateRows(array $rows): array
+    {
+        if (count($rows) !== 16) {
+            return $rows;
+        }
+
+        $insert = [
+            'label' => 'Preventing and responding to violence and harassment, including sexual harassment, bullying, and sexual violence',
+            'data' => [
+                'number' => '',
+                'placeOfIssue' => '',
+                'dateOfIssue' => '',
+                'dateOfExpire' => '',
+            ],
+        ];
+        array_splice($rows, 15, 0, [$insert]);
+
+        return $rows;
     }
 
     /**

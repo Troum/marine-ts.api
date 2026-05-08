@@ -29,6 +29,16 @@ class StoreApplicationFormRequest extends FormRequest
                 $this->request->remove('payload');
             }
         }
+
+        foreach ([
+            'fathersName',
+            'homePhone',
+            'home_phone',
+            'messenger',
+            'messengers',
+        ] as $deprecated) {
+            $this->request->remove($deprecated);
+        }
     }
 
     /**
@@ -57,6 +67,8 @@ class StoreApplicationFormRequest extends FormRequest
             'desiredVesselTypes.*' => ['required', 'string', 'max:128'],
             'positionApplyingFor' => ['required', 'array', 'min:1', 'max:3'],
             'positionApplyingFor.*' => ['required', 'string', 'max:255'],
+            'expectedMonthlySalary' => ['nullable', 'string', 'max:64'],
+            'expectedMonthlySalaryCurrency' => ['nullable', 'string', Rule::in(['RUB', 'USD', 'EUR'])],
         ];
     }
 }

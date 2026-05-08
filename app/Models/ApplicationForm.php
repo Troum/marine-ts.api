@@ -32,7 +32,7 @@ class ApplicationForm extends Model
     }
 
     /**
-     * Имя PDF: lastName_firstName_pos_…должности…_ship_…типы_судов…_shortUuid.pdf
+     * Имя PDF: {должности}_{фамилия}_{имя}_{типы_судов}.pdf (латиница, слова с заглавной буквы).
      */
     public function pdfFileName(): string
     {

@@ -39,6 +39,7 @@ final class RequestedDocumentCatalog
         'Vaccination/YF',
         'Medical Health Certificate',
         'ISPS/SSO',
+        'Preventing and responding to violence and harassment, including sexual harassment, bullying, and sexual violence',
         'Tanker certificates:',
     ];
 

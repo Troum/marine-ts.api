@@ -12,6 +12,8 @@ final class StoreApplicationFormDto extends BaseDto
 
     /**
      * Полное тело анкеты (JSON), как пришло с клиента после валидации запроса.
+     * Актуальные скалярные поля включают `expectedMonthlySalary`; устаревшие
+     * `fathersName`, `homePhone`, `messenger` из запроса удаляются в FormRequest.
      *
      * @var array<string, mixed>
      */
