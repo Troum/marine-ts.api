@@ -35,6 +35,7 @@
             font-size: 24px;
             line-height: 29px;
             color: #000000;
+            text-align: center;
         }
         h1.pdf-section-heading,
         h2.pdf-section-heading,
@@ -226,9 +227,6 @@
 
     <table class="form-title-row" style="width:100%; table-layout:fixed;">
         <tr>
-            <td style="vertical-align:bottom;">
-                <h1 class="pdf-section-heading">Application form</h1>
-            </td>
             <td class="text-right" style="vertical-align:top; width:247px;">
                 @if($mtsLogoDataUri !== '')
                     <img src="{{ $mtsLogoDataUri }}" alt="Marine Technical Solutions" style="max-height:101px; width:auto; max-width:247px; display:inline-block;" />
@@ -246,13 +244,9 @@
         $mobileEmailLine = trim((string) $mobilePhone);
         $emailPart = trim((string) $email);
     @endphp
-
+    <h1 class="pdf-section-heading">Application form:</h1>
     <table class="mb-6 cell-border" style="width:100%; table-layout:fixed;">
-        <colgroup>
-            <col style="width:232px" />
-            <col />
-            <col style="width:213px" />
-        </colgroup>
+        <tbody>
         <tr>
             <td class="cell-border label-strip" style="width:232px;">Position Applied For</td>
             <td class="cell-border strip-value" style="vertical-align:middle;">
@@ -261,10 +255,13 @@
             <td class="cell-border photo-box" rowspan="4">
                 <div style="padding:10px;">
                     @if($photoDataUri !== '')
-                        <img src="{{ $photoDataUri }}" alt="" style="max-width:190px; max-height:230px; display:inline-block;" />
+                        <img src="{{ $photoDataUri }}" alt=""
+                             style="max-width:190px; max-height:230px; display:inline-block;"/>
                     @elseif($photoFileName !== '')
                         <div class="user-text" style="font-size:10px;">{{ $photoFileName }}</div>
-                        <div style="font-size:8px; color:#444; margin-top:4px; line-height:1.2;"><span class="lang-ru">Файл фото не сохранён на сервере.</span><br />Photo file is not stored on the server.</div>
+                        <div style="font-size:8px; color:#444; margin-top:4px; line-height:1.2;"><span class="lang-ru">Файл фото не сохранён на сервере.</span><br/>Photo
+                            file is not stored on the server.
+                        </div>
                     @else
                         <span>Photo</span>
                     @endif
@@ -276,14 +273,16 @@
             <td class="cell-border strip-value">{{ $desiredVesselTypesLine !== '' ? $desiredVesselTypesLine : '—' }}</td>
         </tr>
         <tr>
-            <td class="cell-border label-strip">Last Name /<br />First Name</td>
+            <td class="cell-border label-strip">Last Name /<br/>First Name</td>
             <td class="cell-border strip-value">{{ $pdfNameLine !== '' ? $pdfNameLine : '—' }}</td>
         </tr>
         <tr>
-            <td class="cell-border label-strip">Mobile phone and<br />email</td>
+            <td class="cell-border label-strip">Mobile phone and<br/>email</td>
             <td class="cell-border strip-value">
                 @if($mobileEmailLine !== '')
-                    {{ $mobileEmailLine }}@if($emailPart !== '')<br>{{ $emailPart }}@endif
+                    {{ $mobileEmailLine }}@if($emailPart !== '')
+                        <br>{{ $emailPart }}
+                    @endif
                 @elseif($emailPart !== '')
                     {{ $emailPart }}
                 @else
@@ -291,16 +290,19 @@
                 @endif
             </td>
         </tr>
+        </tbody>
+
     </table>
 
-    <h2 class="pdf-section-heading">Main information</h2>
     <table class="mb-4 cell-border" style="width:100%; table-layout:fixed;">
-        <colgroup>
-            <col style="width:209px" />
-            <col />
-            <col style="width:209px" />
-            <col />
-        </colgroup>
+        <thead>
+        <tr>
+            <th colspan="4" class="table-header cell-border table-dark-head pdf-banner-heading">
+                MAIN INFORMATION
+            </th>
+        </tr>
+        </thead>
+        <tbody>
         <tbody>
         <tr>
             <td class="cell-border label-strip">Date of birth/place <br />of birth</td>
