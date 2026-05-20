@@ -46,7 +46,13 @@ return [
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => [
+        /*
+         * Чтобы админка могла прочитать имя файла при скачивании PDF через fetch
+         * (Content-Disposition недоступен кросс-домену без expose).
+         */
+        'Content-Disposition',
+    ],
 
     'max_age' => 0,
 
