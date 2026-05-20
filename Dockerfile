@@ -20,6 +20,9 @@ RUN apt-get update \
         libsqlite3-dev \
         libfreetype6-dev \
         libjpeg62-turbo-dev \
+        jpegoptim \
+        optipng \
+        webp \
     && rm -rf /var/lib/apt/lists/*
 
 # GD отдельным слоем: при сбое в логе видно именно этот шаг.
