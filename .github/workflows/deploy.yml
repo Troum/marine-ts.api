@@ -1,4 +1,4 @@
-# Репозиторий API (корень = Laravel). Сервер: /var/www/api-marine-ts.mytests.space
+# Репозиторий API (корень = Laravel). Сервер: /var/www/api.marin-ts.com
 # Secrets: SSH_HOST, SSH_USER, SSH_KEY
 name: Deploy
 
@@ -11,7 +11,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      DEPLOY_PATH: /var/www/api-marine-ts.mytests.space
+      DEPLOY_PATH: /var/www/api.marin-ts.com
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
