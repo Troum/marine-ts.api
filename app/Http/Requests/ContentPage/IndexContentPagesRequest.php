@@ -54,6 +54,9 @@ class IndexContentPagesRequest extends FormRequest
             'privacy',
             'vacancies-page',
             'ship-management',
+            'lnk',
+            'engineering',
+            'spare-parts-supply-and-procurement-services',
         ];
 
         return new PaginatedTableRequestDto(
