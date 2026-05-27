@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\Repositories\ApplicationFormRepositoryInterface;
+use App\Contracts\Services\ApplicationFormServiceInterface;
 use App\Contracts\Services\ApplicationFormSupplementaryDocumentServiceInterface;
 use App\Models\ApplicationForm;
 use App\Support\RequestedDocumentCatalog;
@@ -16,6 +17,7 @@ final class ApplicationFormSupplementaryDocumentService implements ApplicationFo
 {
     public function __construct(
         private readonly ApplicationFormRepositoryInterface $applicationFormRepository,
+        private readonly ApplicationFormServiceInterface $applicationFormService,
     ) {}
 
     public function publicUploadSession(string $token): array
@@ -129,12 +131,15 @@ final class ApplicationFormSupplementaryDocumentService implements ApplicationFo
             ]);
         }
 
+        $fresh = $form->fresh();
+        $this->applicationFormService->sendSupplementaryDocumentsUploadedNotification($fresh, $uploadedKeys);
+
         return [
             'status' => 200,
             'payload' => [
                 'data' => [
                     'uploadedKeys' => $uploadedKeys,
-                    'uploaded' => $this->collectUploadedSummaries($form->fresh(), $uploadedKeys),
+                    'uploaded' => $this->collectUploadedSummaries($fresh, $uploadedKeys),
                 ],
             ],
         ];

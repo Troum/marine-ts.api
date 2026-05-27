@@ -10,6 +10,8 @@ use App\DTO\ApplicationForm\StoreOpenApplicationFormDto;
 use App\Enums\ApplicationFormStatus;
 use App\Mail\ApplicationFormSubmittedMail;
 use App\Mail\DocumentsRequestedMail;
+use App\Mail\SupplementaryDocumentsUploadedMail;
+use App\Support\ApplicationFormAdminUrl;
 use App\Models\ApplicationForm;
 use App\Models\Vacancy;
 use App\Support\ApplicationFormPdfTemplateData;
@@ -201,11 +203,7 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
                 ->format(Format::A4)
                 ->generatePdfContent();
 
-            $recipients = array_values(array_filter(config('mail.application_form.recipients', [])));
-            if ($recipients === []) {
-                $fallback = trim((string) config('mail.crewing_notification.address'));
-                $recipients = $fallback !== '' ? [$fallback] : [];
-            }
+            $recipients = $this->applicationFormNotificationRecipients();
             if ($recipients === []) {
                 Log::error('ApplicationForm email skipped: no recipients configured', [
                     'application_form_id' => $applicationForm->id,
@@ -217,6 +215,57 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
             Mail::to($recipients)->send(new ApplicationFormSubmittedMail($applicationForm, $pdfContent));
         } catch (Throwable $e) {
             Log::error('ApplicationForm PDF or crewing email failed', [
+                'application_form_id' => $applicationForm->id,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+    }
+
+    /**
+     * @param  list<string>  $uploadedKeys
+     */
+    public function sendSupplementaryDocumentsUploadedNotification(ApplicationForm $applicationForm, array $uploadedKeys): void
+    {
+        if ($uploadedKeys === []) {
+            return;
+        }
+
+        try {
+            $recipients = $this->applicationFormNotificationRecipients();
+            if ($recipients === []) {
+                Log::error('Supplementary documents email skipped: no recipients configured', [
+                    'application_form_id' => $applicationForm->id,
+                ]);
+
+                return;
+            }
+
+            $payload = is_array($applicationForm->payload) ? $applicationForm->payload : [];
+            $sup = is_array($payload['supplementaryFiles'] ?? null)
+                ? $payload['supplementaryFiles']
+                : (is_array($payload['supplementary_files'] ?? null) ? $payload['supplementary_files'] : []);
+
+            $uploadedDocuments = [];
+            foreach ($uploadedKeys as $key) {
+                $entry = is_array($sup[$key] ?? null) ? $sup[$key] : [];
+                $fileName = is_string($entry['originalName'] ?? null) && $entry['originalName'] !== ''
+                    ? $entry['originalName']
+                    : $key;
+
+                $uploadedDocuments[] = [
+                    'label' => RequestedDocumentCatalog::labelFor($key),
+                    'fileName' => $fileName,
+                ];
+            }
+
+            Mail::to($recipients)->send(new SupplementaryDocumentsUploadedMail(
+                $applicationForm,
+                $uploadedDocuments,
+                ApplicationFormAdminUrl::manageListUrl($applicationForm),
+            ));
+        } catch (Throwable $e) {
+            Log::error('Supplementary documents crewing email failed', [
                 'application_form_id' => $applicationForm->id,
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -258,6 +307,20 @@ final class ApplicationFormService implements ApplicationFormServiceInterface
         }
 
         return $out;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function applicationFormNotificationRecipients(): array
+    {
+        $recipients = array_values(array_filter(config('mail.application_form.recipients', [])));
+        if ($recipients === []) {
+            $fallback = trim((string) config('mail.crewing_notification.address'));
+            $recipients = $fallback !== '' ? [$fallback] : [];
+        }
+
+        return $recipients;
     }
 
     /**

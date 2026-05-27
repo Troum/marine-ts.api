@@ -61,6 +61,13 @@ interface ApplicationFormServiceInterface
     public function sendCrewingSubmittedNotification(ApplicationForm $applicationForm): void;
 
     /**
+     * Уведомить crewing о дозагрузке документов кандидатом по ссылке из письма.
+     *
+     * @param  list<string>  $uploadedKeys
+     */
+    public function sendSupplementaryDocumentsUploadedNotification(ApplicationForm $applicationForm, array $uploadedKeys): void;
+
+    /**
      * Скачать (или показать) фото кандидата (admin-эндпоинт).
      */
     public function downloadPhoto(ApplicationForm $applicationForm): StreamedResponse;

@@ -12,6 +12,8 @@ use App\Enums\ApplicationFormStatus;
 use App\Mail\ApplicationFormSubmittedMail;
 use App\Mail\DocumentsRequestedMail;
 use App\Mail\PageInquirySubmittedMail;
+use App\Mail\SupplementaryDocumentsUploadedMail;
+use App\Support\ApplicationFormAdminUrl;
 use App\Models\ApplicationForm;
 use App\Models\PageInquiry;
 use Illuminate\Contracts\Console\Kernel;
@@ -105,4 +107,14 @@ Mail::to($appForm->email)->send(new DocumentsRequestedMail(
 ));
 Mail::purge();
 
-echo "Готово. Проверьте входящие в Herd (Mail).{$n}Отправлено: raw, 2× заявка с сайта, анкета + запрос документов.{$n}";
+Mail::to($recipients)->send(new SupplementaryDocumentsUploadedMail(
+    $appForm,
+    [
+        ['label' => 'Скан паспорта (общий)', 'fileName' => 'passport-scan.pdf'],
+        ['label' => 'Резюме / CV', 'fileName' => 'cv-ivanov.pdf'],
+    ],
+    ApplicationFormAdminUrl::manageListUrl($appForm),
+));
+Mail::purge();
+
+echo "Готово. Проверьте входящие в Herd (Mail).{$n}Отправлено: raw, 2× заявка с сайта, анкета + запрос документов + дозагрузка.{$n}";
