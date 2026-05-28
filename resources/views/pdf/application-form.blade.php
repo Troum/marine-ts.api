@@ -8,12 +8,12 @@
             margin: 12mm;
             background-color: #ffffff;
         }
-        /* Helvetica — встроенный sans-serif в PDF (DomPDF); Arial в браузере. */
+        /* DejaVu Sans — встроенный в DomPDF, поддерживает кириллицу; Helvetica — только латиница. */
         html {
             background-color: #ffffff;
         }
         body {
-            font-family: Helvetica, Arial, sans-serif;
+            font-family: DejaVu Sans, Helvetica, Arial, sans-serif;
             font-size: 11px;
             line-height: 1.3;
             color: #000000;
@@ -26,7 +26,7 @@
             font-family: DejaVu Sans, Helvetica, Arial, sans-serif;
         }
         .user-text {
-            font-family: Helvetica, Arial, DejaVu Sans, sans-serif;
+            font-family: DejaVu Sans, Helvetica, Arial, sans-serif;
         }
         .pdf-section-heading {
             font-family: Helvetica, Arial, sans-serif;
@@ -99,7 +99,7 @@
             font-weight: bold;
         }
         .table-dark tbody td:not(.td-label) {
-            font-family: Helvetica, Arial, DejaVu Sans, sans-serif;
+            font-family: DejaVu Sans, Helvetica, Arial, sans-serif;
         }
         .table-dark tbody td {
             background-color: #ffffff;
@@ -137,7 +137,7 @@
             min-height: 40px;
             line-height: 1.3;
             box-sizing: border-box;
-            font-family: Helvetica, Arial, DejaVu Sans, sans-serif;
+            font-family: DejaVu Sans, Helvetica, Arial, sans-serif;
         }
         .photo-box {
             border: 1px solid #000000;
